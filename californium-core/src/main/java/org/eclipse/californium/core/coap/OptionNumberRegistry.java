@@ -56,6 +56,9 @@ public final class OptionNumberRegistry {
 	public static final int BLOCK1			= 27;
 	public static final int SIZE2			= 28;
 
+	// draft-selander-ace-object-security-03
+    public static final int OBJECT_SECURITY = 29;
+
 	/**
 	 * Option names.
 	 */
@@ -83,6 +86,7 @@ public final class OptionNumberRegistry {
 		public static final String Block2			= "Block2";
 		public static final String Block1			= "Block1";
 		public static final String Size2			= "Size2";
+        public static final String Object_Security  = "Object-Security";
 	}
 	
 	/**
@@ -131,6 +135,7 @@ public final class OptionNumberRegistry {
 			return optionFormats.STRING;
 		case ETAG:
 		case IF_MATCH:
+            case OBJECT_SECURITY:
 			return optionFormats.OPAQUE;
 		default:
 			return optionFormats.UNKNOWN;
@@ -303,6 +308,8 @@ public final class OptionNumberRegistry {
 			return Names.Size2;
 		case SIZE1:
 			return Names.Size1;
+            case OBJECT_SECURITY:
+                return Names.Object_Security;
 		default:
 			return String.format("Unknown (%d)", optionNumber);
 		}
@@ -328,6 +335,7 @@ public final class OptionNumberRegistry {
 		else if (Names.Block1.equals(name))		return BLOCK1;
 		else if (Names.Size2.equals(name))			return SIZE2;
 		else if (Names.Size1.equals(name))			return SIZE1;
+        else if (Names.Object_Security.equals(name))    return OBJECT_SECURITY;
 		else return UNKNOWN;
 	}
 
