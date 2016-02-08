@@ -101,10 +101,10 @@ public class CoapStack {
 		this.layers = 
 				new Layer.TopDownBuilder()
 				.add(top)
-						.add(new ObjectSecurityLayer())
 						.add(new ObserveLayer(config))
 				.add(new BlockwiseLayer(config))
 				.add(reliabilityLayer)
+						.add(new ObjectSecurityLayer())
 				.add(bottom = new StackBottomAdapter())
 				.create();
 		
