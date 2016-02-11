@@ -1,5 +1,7 @@
 package org.eclipse.californium.core.network.stack;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
@@ -22,6 +24,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
     OSSerializer serializer;
 
     public ObjectSecurityLayer() {
+        CBORFactory f = new CBORFactory();
+        ObjectMapper mapper = new ObjectMapper(f);
         serializer = new OSSerializer();
     }
 
