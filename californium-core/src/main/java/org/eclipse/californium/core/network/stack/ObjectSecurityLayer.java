@@ -1,5 +1,6 @@
 package org.eclipse.californium.core.network.stack;
 
+import COSE.MAC0Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.eclipse.californium.core.coap.*;
@@ -27,6 +28,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         CBORFactory f = new CBORFactory();
         ObjectMapper mapper = new ObjectMapper(f);
         serializer = new OSSerializer();
+        MAC0Message mac = new MAC0Message();
     }
 
     @Override

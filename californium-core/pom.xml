@@ -39,6 +39,18 @@
 			<version>2.7.1</version>
 		</dependency>
 
+		<!--
+		Local dependency until COSE-JAVA is released. Run "mvn package" in COSE-JAVA submodule to build jar
+		-->
+		<dependency>
+
+			<groupId>com.joakimb.cose-java</groupId>
+			<artifactId>COSE-JAVA</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../COSE-JAVA/target/uber-COSE-JAVA-1.0-SNAPSHOT.jar</systemPath>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -52,6 +64,8 @@
 					<argLine>-Djava.util.logging.config.file=${project.build.testOutputDirectory}/Californium-logging.properties</argLine>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
+
 </project>
