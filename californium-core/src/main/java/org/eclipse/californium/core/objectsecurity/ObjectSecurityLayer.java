@@ -1,4 +1,4 @@
-package org.eclipse.californium.core.network.stack;
+package org.eclipse.californium.core.objectsecurity;
 
 import COSE.MAC0Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +8,7 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
 import org.eclipse.californium.core.network.serialization.Serializer;
+import org.eclipse.californium.core.network.stack.AbstractLayer;
 import org.eclipse.californium.core.objectsecurity.OSSerializer;
 
 import java.util.List;
@@ -25,18 +26,18 @@ public class ObjectSecurityLayer extends AbstractLayer {
     OSSerializer serializer;
 
     public ObjectSecurityLayer() {
-        CBORFactory f = new CBORFactory();
-        ObjectMapper mapper = new ObjectMapper(f);
         serializer = new OSSerializer();
-        MAC0Message mac = new MAC0Message();
     }
 
     @Override
     public void sendRequest(Exchange exchange, Request request) {
        OptionSet options = request.getOptions();
-        byte[] optionData = new byte[1];
-        optionData[0] = (byte) 0x00;
-        options.addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY, optionData));
+
+        char[] algId = { 'a', 'b', 'c'};
+        char[] key = { '1', '2', '3'};
+        OSCID cid = new OSCID(key, algId);
+
+        options.addOption(new ObjectSecurityOption(cid));
         System.out.println("Bytes: " );
         byte[] serialized = serializer.serializeRequest(request);
         System.out.println(bytesToHex(serialized));

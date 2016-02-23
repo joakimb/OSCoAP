@@ -1,6 +1,9 @@
 package org.eclipse.californium.core.objectsecurity;
 
+import COSE.*;
+import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.*;
+import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
 
 import java.util.List;
@@ -17,6 +20,22 @@ public class OSSerializer {
 
     public OSSerializer(){
         writer = new DatagramWriter();
+    }
+
+    public byte[] signMessage(Message message){
+        String content = "This is the content";
+        byte[] key = { 'a', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                15, 16, 17, 18, 19,
+                20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+        MAC0Message mac = new MAC0Message();
+        mac.SetContent(content);
+        mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
+        try {
+            mac.Create(key);
+        } catch (CoseException e){
+
+        }
+        return null; //TODO
     }
 
     //TODO should code zero be allowed?
@@ -41,7 +60,7 @@ public class OSSerializer {
 
         //TODO
 
-        //first 2 bytes of header with Type and Token Length bits set to 0
+       //first 2 bytes of header with Type and Token Length bits set to 0
         writer.write(VERSION, VERSION_BITS);
         writer.write(0, TYPE_BITS);
         writer.write(0,TOKEN_LENGTH_BITS);

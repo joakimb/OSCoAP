@@ -50,10 +50,10 @@ import java.util.Arrays;
 public class Option implements Comparable<Option> {
 
 	/** The option number. */
-	private int number;
+	protected int number;
 	
 	/** The value as byte array. */
-	private byte[] value; // not null
+	protected byte[] value; // not null
 	
 	/**
 	 * Instantiates a new empty option.
