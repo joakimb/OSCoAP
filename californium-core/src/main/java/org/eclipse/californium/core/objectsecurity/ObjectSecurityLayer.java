@@ -33,8 +33,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void sendRequest(Exchange exchange, Request request) {
        OptionSet options = request.getOptions();
 
-        char[] algId = { 'a', 'b', 'c'};
-        char[] key = { '1', '2', '3'};
+        int algId = 1;
+        int key = 1;
         OSCID cid = new OSCID(key, algId);
 
         options.addOption(new ObjectSecurityOption(cid));
