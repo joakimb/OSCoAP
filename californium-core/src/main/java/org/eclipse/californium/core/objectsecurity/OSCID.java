@@ -56,7 +56,7 @@ public class OSCID {
         if (!( o instanceof OSCID)) return false;
         OSCID other = (OSCID)o;
         if (this.getAlg() != other.getAlg()) return false;
-        if (! Arrays.equals(this.getKey(), other.getKey())) return false;
+        if (! Arrays.equals(this.keyId, other.keyId)) return false;
         if (this.getParams() != other.getParams()) return false;
         return true;
     }
