@@ -38,7 +38,13 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>2.7.1</version>
 		</dependency>
-
+		<!-- FOR Unsigned Bytes
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>19.0</version>
+		</dependency>
+		-->
 		<!--
 		Local dependency until COSE-JAVA is released. Run "mvn package" in COSE-JAVA local directory to build jar
 		-->
