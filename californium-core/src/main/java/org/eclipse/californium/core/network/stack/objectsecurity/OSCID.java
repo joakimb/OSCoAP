@@ -1,11 +1,7 @@
-package org.eclipse.californium.core.objectsecurity;
+package org.eclipse.californium.core.network.stack.objectsecurity;
 
-import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
-import org.eclipse.californium.core.objectsecurity.osexcepitons.OSKeyException;
-
-import java.util.Arrays;
-import java.util.Map;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSKeyException;
 
 /**
  * Created by joakim on 2016-02-23.

@@ -1,7 +1,6 @@
-package org.eclipse.californium.core.objectsecurity;
+package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.*;
-import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;

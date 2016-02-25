@@ -2,8 +2,7 @@ package org.eclipse.californium.core.test.objectsecurity;
 
 import static org.junit.Assert.*;
 
-import org.eclipse.californium.core.objectsecurity.OSCID;
-import org.junit.Before;
+import org.eclipse.californium.core.network.stack.objectsecurity.OSCID;
 import org.junit.Test;
 
 /**

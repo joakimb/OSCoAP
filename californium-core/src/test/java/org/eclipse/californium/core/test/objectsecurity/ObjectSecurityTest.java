@@ -1,4 +1,4 @@
-package org.eclipse.californium.core.test;
+package org.eclipse.californium.core.test.objectsecurity;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;

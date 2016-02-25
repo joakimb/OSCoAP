@@ -30,7 +30,7 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.Outbox;
 import org.eclipse.californium.core.network.Exchange.Origin;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.objectsecurity.ObjectSecurityLayer;
+import org.eclipse.californium.core.network.stack.objectsecurity.ObjectSecurityLayer;
 import org.eclipse.californium.core.server.MessageDeliverer;
 import org.eclipse.californium.elements.Connector;
 

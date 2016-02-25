@@ -1,4 +1,4 @@
-package org.eclipse.californium.core.objectsecurity.osexcepitons;
+package org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons;
 
 /**
  * Created by joakim on 2016-02-24.

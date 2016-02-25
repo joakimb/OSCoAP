@@ -1,4 +1,4 @@
-package org.eclipse.californium.core.objectsecurity;
+package org.eclipse.californium.core.network.stack.objectsecurity;
 
 /**
  * Created by joakim on 2016-02-24.

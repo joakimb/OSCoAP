@@ -1,22 +1,8 @@
-package org.eclipse.californium.core.objectsecurity;
+package org.eclipse.californium.core.network.stack.objectsecurity;
 
-import COSE.MAC0Message;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
-import org.eclipse.californium.core.network.serialization.DataSerializer;
-import org.eclipse.californium.core.network.serialization.DatagramWriter;
-import org.eclipse.californium.core.network.serialization.Serializer;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
-import org.eclipse.californium.core.objectsecurity.OSSerializer;
-
-import java.util.List;
-import java.util.Random;
-
-import static org.eclipse.californium.core.coap.CoAP.MessageFormat.*;
-import static org.eclipse.californium.core.coap.CoAP.MessageFormat.OPTION_LENGTH_BITS;
-import static org.eclipse.californium.core.coap.CoAP.MessageFormat.PAYLOAD_MARKER;
 
 /**
  * Created by joakim on 04/02/16.
