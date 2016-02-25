@@ -13,8 +13,8 @@ import java.util.Map;
 public class OSCID {
 
 
-    private int keyId; //2 bytes but java lacks support for 8 bit unsigned values
-    private int algId; //1 byte
+    private int keyId;  //2 bytes but java lacks support for 8 bit unsigned values
+    private int algId;  //1 byte
     private int params; //1byte
 
     public OSCID(int keyId, int algId){
