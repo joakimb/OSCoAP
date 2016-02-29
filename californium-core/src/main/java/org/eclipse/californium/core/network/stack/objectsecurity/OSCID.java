@@ -9,9 +9,9 @@ import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OS
 public class OSCID {
 
 
-    private int keyId;  //2 bytes but java lacks support for 8 bit unsigned values
-    private int algId;  //1 byte
-    private int params; //1byte
+    private int keyId;  //3 bytes but java lacks support for 8 bit unsigned values
+    private int algId;  //2 byte
+    private int params; //3 byte
 
     public OSCID(int keyId, int algId){
         this.keyId = keyId;
@@ -27,8 +27,8 @@ public class OSCID {
     //TODO dummy lookup
     public byte[] getKey() throws OSKeyException{
         byte[] key;
-        byte[] key01 = {0,0,0,1};
-        byte[] key02 = {0,0,0,2};
+        byte[] key01 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+        byte[] key02 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2};
 
         int keyId01 = 1;
         int keyId02 = 2;
@@ -60,9 +60,9 @@ public class OSCID {
 
     public byte[] serialise(){
         DatagramWriter writer = new DatagramWriter();
-        writer.write(keyId,16);
-        writer.write(algId,8);
-        writer.write(params,8);
+        writer.write(keyId,24);
+        writer.write(algId,16);
+        writer.write(params,24);
         return writer.toByteArray();
     }
 }

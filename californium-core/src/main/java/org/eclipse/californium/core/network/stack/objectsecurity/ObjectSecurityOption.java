@@ -21,24 +21,34 @@ public class ObjectSecurityOption extends Option{
     private OSSEQ seq;
     private OSSeqDB seqDB;
 
-    public ObjectSecurityOption(OSCID cid){
+
+    public ObjectSecurityOption(OSCID cid, Request message){
         number = OptionNumberRegistry.OBJECT_SECURITY;
         seqDB = new OSHashMapSeqDB();
         this.cid = cid;
         this.seq = seqDB.getSeq(cid);
         if (this.seq == null){
-            this.seq = new OSSEQ(0);
+            this.seq = new OSSEQ();
+        }
+
+        //MAC0
+        try {
+            value = getMAC0COSE(getRequestMac0AuthenticatedData(message)).EncodeToBytes();
+        } catch (CoseException e){
+            System.out.println("COSEException: " +  e.getStackTrace() + " end:");
+            System.exit(1);
         }
     }
 
-    public MAC0Message getMAC0COSE(byte[] content){
+    private MAC0Message getMAC0COSE(byte[] content){
         MAC0Message mac = new MAC0Message();
         mac.SetContent(content);
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
         try {
-            mac.Create(cid.getKey());
+            byte[] key = cid.getKey();
+            mac.Create(key);
         } catch (CoseException e){
-            System.out.println("Cose Exception");
+            e.printStackTrace();
             System.exit(1);
         } catch  (OSKeyException e){
             System.out.println("Key Exception");
@@ -47,7 +57,7 @@ public class ObjectSecurityOption extends Option{
         return mac;
     }
 
-    public byte[] getRequestMac0AuthenticatedData(Request message){
+    private byte[] getRequestMac0AuthenticatedData(Request message){
         DatagramWriter writer = new DatagramWriter();
 
         writeSMHeader(writer);
@@ -60,7 +70,8 @@ public class ObjectSecurityOption extends Option{
 
     //
     private void writeSMHeader(DatagramWriter writer ){
-        //TODO
+        writer.writeBytes(cid.serialise());
+        writer.writeBytes(seq.serialise());
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0

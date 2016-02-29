@@ -9,12 +9,6 @@ import org.eclipse.californium.core.network.stack.AbstractLayer;
  */
 public class ObjectSecurityLayer extends AbstractLayer {
 
-    OSSerializer serializer;
-
-    public ObjectSecurityLayer() {
-        serializer = new OSSerializer();
-    }
-
     @Override
     public void sendRequest(Exchange exchange, Request request) {
        OptionSet options = request.getOptions();
@@ -22,11 +16,11 @@ public class ObjectSecurityLayer extends AbstractLayer {
         int algId = 1;
         int key = 1;
         OSCID cid = new OSCID(key, algId);
-
-        options.addOption(new ObjectSecurityOption(cid));
+        ObjectSecurityOption op = new ObjectSecurityOption(cid,request);
+        options.addOption(op);
         System.out.println("Bytes: " );
-        byte[] serialized = serializer.serializeRequest(request);
-        System.out.println(bytesToHex(serialized));
+        //byte[] serialized2 = op.getRequestMac0AuthenticatedData(request);
+        //System.out.println(bytesToHex(serialized2));
         super.sendRequest(exchange, request);
     }
     @Override
