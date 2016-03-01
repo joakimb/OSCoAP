@@ -21,15 +21,14 @@ public class ObjectSecurityOption extends Option{
     private OSSEQ seq;
     private OSSeqDB seqDB;
 
-
     public ObjectSecurityOption(OSCID cid, Request message){
-        number = OptionNumberRegistry.OBJECT_SECURITY;
-        seqDB = new OSHashMapSeqDB();
-        this.cid = cid;
+
         this.seq = seqDB.getSeq(cid);
         if (this.seq == null){
             this.seq = new OSSEQ();
         }
+
+
 
         //MAC0
         try {
@@ -38,6 +37,32 @@ public class ObjectSecurityOption extends Option{
             System.out.println("COSEException: " +  e.getStackTrace() + " end:");
             System.exit(1);
         }
+    }
+
+    public ObjectSecurityOption(OSCID cid, Response message){
+
+        this.seq = seqDB.getSeq(cid);
+        if (this.seq == null){
+            
+        }
+
+
+
+        //MAC0
+        try {
+            value = getMAC0COSE(getRequestMac0AuthenticatedData(message)).EncodeToBytes();
+        } catch (CoseException e){
+            System.out.println("COSEException: " +  e.getStackTrace() + " end:");
+            System.exit(1);
+        }
+    }
+
+    private void commonConstructor(OSCID cid){
+
+        number = OptionNumberRegistry.OBJECT_SECURITY;
+        seqDB = new OSHashMapSeqDB();
+        this.cid = cid;
+
     }
 
     private MAC0Message getMAC0COSE(byte[] content){
