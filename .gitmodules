@@ -1,1 +1,4 @@
 
+[submodule "COSE-JAVA"]
+	path = COSE-JAVA
+	url = git@github.com:cose-wg/COSE-JAVA.git

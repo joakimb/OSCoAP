@@ -23,6 +23,7 @@ public class ObjectSecurityOption extends Option{
 
     public ObjectSecurityOption(OSCID cid, Request message){
 
+        commonConstructor(cid);
         this.seq = seqDB.getSeq(cid);
         if (this.seq == null){
             this.seq = new OSSEQ();
@@ -47,7 +48,7 @@ public class ObjectSecurityOption extends Option{
         }
 
 
-
+/*
         //MAC0
         try {
             value = getMAC0COSE(getRequestMac0AuthenticatedData(message)).EncodeToBytes();
@@ -55,6 +56,7 @@ public class ObjectSecurityOption extends Option{
             System.out.println("COSEException: " +  e.getStackTrace() + " end:");
             System.exit(1);
         }
+        */
     }
 
     private void commonConstructor(OSCID cid){
