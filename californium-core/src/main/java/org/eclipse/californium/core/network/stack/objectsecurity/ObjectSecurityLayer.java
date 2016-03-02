@@ -35,7 +35,17 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveRequest(Exchange exchange, Request request) {
-        super.receiveRequest(exchange,request);
+        OptionSet options = request.getOptions();
+
+        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+            ObjectSecurityOption osOpt;
+            System.out.println("Incoming OSOption!");
+            for (Option o : options.asSortedList()) {
+
+                osOpt =null; //h'mta ut och verifiera
+            }
+        }
+        super.receiveRequest(exchange, request);
     }
 
     @Override
