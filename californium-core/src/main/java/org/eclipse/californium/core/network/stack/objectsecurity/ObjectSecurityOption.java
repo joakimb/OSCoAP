@@ -1,7 +1,7 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.*;
-import org.bouncycastle.asn1.dvcs.Data;
+import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
@@ -23,48 +23,33 @@ public class ObjectSecurityOption extends Option{
 
     public ObjectSecurityOption(OSCID cid, Request message){
 
-        commonConstructor(cid);
+        this(cid, message,message.getCode() == null ? 0 : message.getCode().value);
+
+    }
+
+    public ObjectSecurityOption(OSCID cid, Response message){
+
+        this(cid, message,message.getCode() == null ? 0 : message.getCode().value);
+
+    }
+
+    private ObjectSecurityOption(OSCID cid, Message message, int code){
+        number = OptionNumberRegistry.OBJECT_SECURITY;
+        seqDB = new OSHashMapSeqDB();
+        this.cid = cid;
         this.seq = seqDB.getSeq(cid);
         if (this.seq == null){
             this.seq = new OSSEQ();
         }
 
 
-
         //MAC0
         try {
-            value = getMAC0COSE(getRequestMac0AuthenticatedData(message)).EncodeToBytes();
+            value = getMAC0COSE(getRequestMac0AuthenticatedData(message, code)).EncodeToBytes();
         } catch (CoseException e){
             System.out.println("COSEException: " +  e.getStackTrace() + " end:");
             System.exit(1);
         }
-    }
-
-    public ObjectSecurityOption(OSCID cid, Response message){
-
-        this.seq = seqDB.getSeq(cid);
-        if (this.seq == null){
-            
-        }
-
-
-/*
-        //MAC0
-        try {
-            value = getMAC0COSE(getRequestMac0AuthenticatedData(message)).EncodeToBytes();
-        } catch (CoseException e){
-            System.out.println("COSEException: " +  e.getStackTrace() + " end:");
-            System.exit(1);
-        }
-        */
-    }
-
-    private void commonConstructor(OSCID cid){
-
-        number = OptionNumberRegistry.OBJECT_SECURITY;
-        seqDB = new OSHashMapSeqDB();
-        this.cid = cid;
-
     }
 
     private MAC0Message getMAC0COSE(byte[] content){
@@ -84,11 +69,11 @@ public class ObjectSecurityOption extends Option{
         return mac;
     }
 
-    private byte[] getRequestMac0AuthenticatedData(Request message){
+    private byte[] getRequestMac0AuthenticatedData(Message message, int code){
         DatagramWriter writer = new DatagramWriter();
 
         writeSMHeader(writer);
-        writeCoAPHeader(writer, message);
+        writeCoAPHeader(writer, code);
         writeOptions(writer, message);
         writePayload(writer, message);
 
@@ -102,10 +87,8 @@ public class ObjectSecurityOption extends Option{
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0
-    private void writeCoAPHeader(DatagramWriter writer, Request message){
-        CoAP.Code cCode = message.getCode();
-        int code = 0;
-        if (cCode != null) code = cCode.value;
+    private void writeCoAPHeader(DatagramWriter writer, int code){
+
 
         writer.write(VERSION, VERSION_BITS);
         writer.write(0, TYPE_BITS);
