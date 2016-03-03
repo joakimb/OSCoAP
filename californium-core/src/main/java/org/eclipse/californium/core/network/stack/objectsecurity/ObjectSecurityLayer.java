@@ -4,6 +4,8 @@ import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
+import java.util.Arrays;
+
 /**
  * Created by joakim on 04/02/16.
  */
@@ -13,9 +15,11 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void sendRequest(Exchange exchange, Request request) {
        OptionSet options = request.getOptions();
 
-        int algId = 1;
-        int key = 1;
-        OSCID cid = new OSCID(key, algId);
+        byte[] cidArr = new byte[8];
+        Arrays.fill(cidArr, (byte) 0);
+        cidArr[7]  = 1;
+
+        OSCID cid = new OSCID(cidArr);
         ObjectSecurityOption op = new ObjectSecurityOption(cid,request);
         options.addOption(op);
         System.out.println("Bytes: " );
@@ -42,7 +46,11 @@ public class ObjectSecurityLayer extends AbstractLayer {
             System.out.println("Incoming OSOption!");
             for (Option o : options.asSortedList()) {
 
-                osOpt =null; //h'mta ut och verifiera
+               if(o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY){
+
+                   System.out.println("FOUND it!");
+
+               }
             }
         }
         super.receiveRequest(exchange, request);

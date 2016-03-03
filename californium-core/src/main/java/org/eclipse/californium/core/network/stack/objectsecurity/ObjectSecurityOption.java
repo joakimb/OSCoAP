@@ -1,7 +1,6 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.*;
-import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
@@ -45,14 +44,32 @@ public class ObjectSecurityOption extends Option{
 
         //MAC0
         try {
-            value = getMAC0COSE(getRequestMac0AuthenticatedData(message, code)).EncodeToBytes();
+            value = createMAC0COSESign(getRequestMac0AuthenticatedData(message, code)).EncodeToBytes();
         } catch (CoseException e){
             System.out.println("COSEException: " +  e.getStackTrace() + " end:");
             System.exit(1);
         }
     }
+/*
+    public static boolean isValidMAC0(byte[] content){
 
-    private MAC0Message getMAC0COSE(byte[] content){
+        MAC0Message mac = new MAC0Message();
+        mac.SetContent(content);
+        mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
+        try {
+            byte[] key = cid.getKey();
+            mac.Create(key);
+        } catch (CoseException e){
+            e.printStackTrace();
+            System.exit(1);
+        } catch  (OSKeyException e){
+            System.out.println("Key Exception");
+            System.exit(1);
+        }
+
+    }
+*/
+    private MAC0Message createMAC0COSESign(byte[] content){
         MAC0Message mac = new MAC0Message();
         mac.SetContent(content);
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
@@ -82,7 +99,7 @@ public class ObjectSecurityOption extends Option{
 
     //
     private void writeSMHeader(DatagramWriter writer ){
-        writer.writeBytes(cid.serialise());
+        writer.writeBytes(cid.getCid());
         writer.writeBytes(seq.serialise());
     }
 
