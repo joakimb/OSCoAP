@@ -11,16 +11,28 @@ import java.util.Arrays;
  */
 public class ObjectSecurityLayer extends AbstractLayer {
 
+    OSTransactionIDDB db;
+
+    public ObjectSecurityLayer(){
+        db = OSHashMapTIDDB.getDB();
+    }
+
     @Override
     public void sendRequest(Exchange exchange, Request request) {
        OptionSet options = request.getOptions();
 
-        byte[] cidArr = new byte[8];
-        Arrays.fill(cidArr, (byte) 0);
-        cidArr[7]  = 1;
+        byte[] tidArr = new byte[8];
+        Arrays.fill(tidArr, (byte) 0);
+        tidArr[7]  = 1;
 
-        OSCID cid = new OSCID(cidArr);
-        ObjectSecurityOption op = new ObjectSecurityOption(cid,request);
+        OSTID tid = db.getTID(tidArr);
+
+        if(tid == null){
+            tid = new OSTID(tidArr);
+            db.setTID(tidArr, tid);
+        }
+
+        ObjectSecurityOption op = new ObjectSecurityOption(tid,request);
         options.addOption(op);
         System.out.println("Bytes: " );
         //byte[] serialized2 = op.getRequestMac0AuthenticatedData(request);
@@ -49,7 +61,17 @@ public class ObjectSecurityLayer extends AbstractLayer {
                if(o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY){
 
                    System.out.println("FOUND it!");
+                   //TODO change to actual lookup by CID extraction
+                   byte[] tidArr = new byte[8];
+                   Arrays.fill(tidArr, (byte) 0);
+                   tidArr[7]  = 1;
 
+                   OSTID tid = db.getTID(tidArr);
+
+                   if(tid == null){
+                       tid = new OSTID(tidArr);
+                       db.setTID(tidArr, tid);
+                   }
                }
             }
         }

@@ -16,31 +16,23 @@ import static org.eclipse.californium.core.coap.CoAP.MessageFormat.CODE_BITS;
  */
 public class ObjectSecurityOption extends Option{
 
-    private OSCID cid;
-    private OSSEQ seq;
-    private OSSeqDB seqDB;
+    private OSTID tid;
 
-    public ObjectSecurityOption(OSCID cid, Request message){
+    public ObjectSecurityOption(OSTID tid, Request message){
 
-        this(cid, message,message.getCode() == null ? 0 : message.getCode().value);
+        this(tid, message,message.getCode() == null ? 0 : message.getCode().value);
 
     }
 
-    public ObjectSecurityOption(OSCID cid, Response message){
+    public ObjectSecurityOption(OSTID tid, Response message){
 
-        this(cid, message,message.getCode() == null ? 0 : message.getCode().value);
+        this(tid, message,message.getCode() == null ? 0 : message.getCode().value);
 
     }
 
-    private ObjectSecurityOption(OSCID cid, Message message, int code){
+    private ObjectSecurityOption(OSTID tid, Message message, int code){
         number = OptionNumberRegistry.OBJECT_SECURITY;
-        seqDB = new OSHashMapSeqDB();
-        this.cid = cid;
-        this.seq = seqDB.getSeq(cid);
-        if (this.seq == null){
-            this.seq = new OSSEQ();
-        }
-
+        this.tid = tid;
 
         //MAC0
         try {
@@ -57,7 +49,7 @@ public class ObjectSecurityOption extends Option{
         mac.SetContent(content);
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
         try {
-            byte[] key = cid.getKey();
+            byte[] key = tid.getKey();
             mac.Create(key);
         } catch (CoseException e){
             e.printStackTrace();
@@ -74,7 +66,7 @@ public class ObjectSecurityOption extends Option{
         mac.SetContent(content);
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
         try {
-            byte[] key = cid.getKey();
+            byte[] key = tid.getKey();
             mac.Create(key);
         } catch (CoseException e){
             e.printStackTrace();
@@ -99,8 +91,8 @@ public class ObjectSecurityOption extends Option{
 
     //
     private void writeSMHeader(DatagramWriter writer ){
-        writer.writeBytes(cid.getCid());
-        writer.writeBytes(seq.serialise());
+        writer.writeBytes(tid.getCid());
+        writer.write(tid.getSeq(), 3);
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0

@@ -1,6 +1,5 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
-import org.eclipse.californium.core.network.serialization.DatagramWriter;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSKeyException;
 
 import java.util.Arrays;
@@ -8,12 +7,13 @@ import java.util.Arrays;
 /**
  * Created by joakim on 2016-02-23.
  */
-public class OSCID {
+public class OSTID {
 
 
-    private byte[] cid;  //3 bytes but java lacks support for 8 bit unsigned values
+    private byte[] cid;  //8 bytes but java lacks support for 8 bit unsigned values
+    private int seq;    //3 bytes
 
-    public OSCID(byte[] cid){
+    public OSTID(byte[] cid){
         this.cid = cid;
     }
 
@@ -41,12 +41,16 @@ public class OSCID {
 
     @Override
     public boolean equals(Object o){
-        if (!( o instanceof OSCID)) return false;
-        OSCID other = (OSCID)o;
+        if (!( o instanceof OSTID)) return false;
+        OSTID other = (OSTID)o;
         return Arrays.equals(this.cid, other.cid);
     }
 
     public byte[] getCid(){
         return cid;
+    }
+
+    public int getSeq(){
+        return seq;
     }
 }
