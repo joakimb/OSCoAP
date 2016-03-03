@@ -1,6 +1,7 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.*;
+import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
@@ -42,15 +43,22 @@ public class ObjectSecurityOption extends Option{
             System.exit(1);
         }
     }
-/*
-    public static boolean isValidMAC0(byte[] content){
+
+    public static boolean isValidMAC0(byte[] payload, OSTID tid){
 
         MAC0Message mac = new MAC0Message();
-        mac.SetContent(content);
+        try {
+            mac.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
+        } catch (CoseException e) {
+            :we.printStackTrace();
+        }
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
+
+        boolean result = false;
+
         try {
             byte[] key = tid.getKey();
-            mac.Create(key);
+            result = mac.Validate(key);
         } catch (CoseException e){
             e.printStackTrace();
             System.exit(1);
@@ -59,8 +67,9 @@ public class ObjectSecurityOption extends Option{
             System.exit(1);
         }
 
+        return result;
     }
-*/
+
     private MAC0Message createMAC0COSESign(byte[] content){
         MAC0Message mac = new MAC0Message();
         mac.SetContent(content);

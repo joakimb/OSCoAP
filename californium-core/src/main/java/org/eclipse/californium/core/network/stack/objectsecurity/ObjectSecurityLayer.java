@@ -4,6 +4,7 @@ import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
@@ -21,15 +22,12 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void sendRequest(Exchange exchange, Request request) {
        OptionSet options = request.getOptions();
 
-        byte[] tidArr = new byte[8];
-        Arrays.fill(tidArr, (byte) 0);
-        tidArr[7]  = 1;
 
-        OSTID tid = db.getTID(tidArr);
+        OSTID tid = db.getTID(BigInteger.ONE);
 
         if(tid == null){
-            tid = new OSTID(tidArr);
-            db.setTID(tidArr, tid);
+            tid = new OSTID(BigInteger.ONE);
+            db.setTID(BigInteger.ONE, tid);
         }
 
         ObjectSecurityOption op = new ObjectSecurityOption(tid,request);
@@ -54,7 +52,6 @@ public class ObjectSecurityLayer extends AbstractLayer {
         OptionSet options = request.getOptions();
 
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
-            ObjectSecurityOption osOpt;
             System.out.println("Incoming OSOption!");
             for (Option o : options.asSortedList()) {
 
@@ -62,15 +59,18 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                    System.out.println("FOUND it!");
                    //TODO change to actual lookup by CID extraction
-                   byte[] tidArr = new byte[8];
-                   Arrays.fill(tidArr, (byte) 0);
-                   tidArr[7]  = 1;
+         OSTID tid = db.getTID(BigInteger.ONE);
 
-                   OSTID tid = db.getTID(tidArr);
+        if(tid == null){
+            tid = new OSTID(BigInteger.ONE);
+            db.setTID(BigInteger.ONE, tid);
+        }
 
-                   if(tid == null){
-                       tid = new OSTID(tidArr);
-                       db.setTID(tidArr, tid);
+                   if(ObjectSecurityOption.isValidMAC0(o.getValue(), tid)){
+
+                       System.out.println("valid!");
+                   } else {
+                       System.out.println("NOT valid!");
                    }
                }
             }

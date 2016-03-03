@@ -2,6 +2,7 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSKeyException;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
@@ -10,10 +11,10 @@ import java.util.Arrays;
 public class OSTID {
 
 
-    private byte[] cid;  //8 bytes but java lacks support for 8 bit unsigned values
+    private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
     private int seq;    //3 bytes
 
-    public OSTID(byte[] cid){
+    public OSTID(BigInteger cid){
         this.cid = cid;
     }
 
@@ -43,11 +44,11 @@ public class OSTID {
     public boolean equals(Object o){
         if (!( o instanceof OSTID)) return false;
         OSTID other = (OSTID)o;
-        return Arrays.equals(this.cid, other.cid);
+        return other.cid.equals(this.cid);
     }
 
     public byte[] getCid(){
-        return cid;
+        return cid.toByteArray();
     }
 
     public int getSeq(){

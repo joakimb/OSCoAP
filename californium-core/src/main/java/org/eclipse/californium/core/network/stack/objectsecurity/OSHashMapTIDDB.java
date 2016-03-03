@@ -1,5 +1,6 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 
 /**
@@ -8,7 +9,7 @@ import java.util.HashMap;
 public class OSHashMapTIDDB implements OSTransactionIDDB {
 
     static OSHashMapTIDDB db;
-    HashMap<byte[], OSTID> map;
+    HashMap<BigInteger, OSTID> map;
 
     public static OSHashMapTIDDB getDB(){
         if(db == null) db = new OSHashMapTIDDB();
@@ -16,16 +17,16 @@ public class OSHashMapTIDDB implements OSTransactionIDDB {
     }
 
     public OSHashMapTIDDB(){
-        map = new HashMap<byte[], OSTID>();
+        map = new HashMap<BigInteger, OSTID>();
     }
 
     @Override
-    public OSTID getTID(byte[] tid) {
+    public OSTID getTID(BigInteger tid) {
         return map.get(tid);
     }
 
     @Override
-    public void setTID(byte[] tid, OSTID tidObj) {
+    public void setTID(BigInteger tid, OSTID tidObj) {
         map.put(tid,tidObj);
     }
 }
