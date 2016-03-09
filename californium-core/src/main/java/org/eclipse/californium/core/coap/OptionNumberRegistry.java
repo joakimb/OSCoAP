@@ -56,8 +56,8 @@ public final class OptionNumberRegistry {
 	public static final int BLOCK1			= 27;
 	public static final int SIZE2			= 28;
 
-	// draft-selander-ace-object-security-03
-    public static final int OBJECT_SECURITY = 29;
+	// draft-selander-ace-object-security-04
+    public static final int OBJECT_SECURITY = 21;
 
 	/**
 	 * Option names.
