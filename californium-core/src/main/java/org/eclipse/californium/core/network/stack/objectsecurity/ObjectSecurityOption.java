@@ -37,6 +37,7 @@ public class ObjectSecurityOption extends Option{
 
         //MAC0
         try {
+            //System.out.println("Size: " + getRequestMac0AuthenticatedData(message, code).length);
             value = createMAC0COSESign(getRequestMac0AuthenticatedData(message, code)).EncodeToBytes();
         } catch (CoseException e){
             System.out.println("COSEException: " +  e.getStackTrace() + " end:");
@@ -50,7 +51,7 @@ public class ObjectSecurityOption extends Option{
         try {
             mac.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
         } catch (CoseException e) {
-            :we.printStackTrace();
+            e.printStackTrace();
         }
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
 
@@ -81,7 +82,7 @@ public class ObjectSecurityOption extends Option{
             e.printStackTrace();
             System.exit(1);
         } catch  (OSKeyException e){
-            System.out.println("Key Exception");
+            e.printStackTrace();
             System.exit(1);
         }
         return mac;
