@@ -33,8 +33,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
         ObjectSecurityOption op = new ObjectSecurityOption(tid,request);
         options.addOption(op);
         System.out.println("Bytes: " );
-        //byte[] serialized2 = op.getRequestMac0AuthenticatedData(request);
-        //System.out.println(bytesToHex(serialized2));
+        byte[] serialized2 = op.getValue();
+        System.out.println(bytesToHex(serialized2));
         super.sendRequest(exchange, request);
     }
     @Override
