@@ -1,15 +1,14 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 
 /**
  * Created by joakim on 2016-03-03.
  */
-public class OSHashMapTIDDB implements OSTransactionIDDB {
+public class OSHashMapTIDDB implements OSTidDB {
 
     static OSHashMapTIDDB db;
-    HashMap<BigInteger, OSTID> map;
+    HashMap<String, OSTid> map;
 
     public static OSHashMapTIDDB getDB(){
         if(db == null) db = new OSHashMapTIDDB();
@@ -17,16 +16,16 @@ public class OSHashMapTIDDB implements OSTransactionIDDB {
     }
 
     public OSHashMapTIDDB(){
-        map = new HashMap<BigInteger, OSTID>();
+        map = new HashMap<String, OSTid>();
     }
 
     @Override
-    public OSTID getTID(BigInteger tid) {
-        return map.get(tid);
+    public OSTid getTID(String uri) {
+        return map.get(uri);
     }
 
     @Override
-    public void setTID(BigInteger tid, OSTID tidObj) {
-        map.put(tid,tidObj);
+    public void addTid(String uri, OSTid tidObj) {
+        map.put(uri,tidObj);
     }
 }

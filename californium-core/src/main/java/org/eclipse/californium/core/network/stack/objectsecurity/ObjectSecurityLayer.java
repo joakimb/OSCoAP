@@ -5,36 +5,47 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * Created by joakim on 04/02/16.
  */
 public class ObjectSecurityLayer extends AbstractLayer {
 
-    OSTransactionIDDB db;
+    OSTidDB db;
 
     public ObjectSecurityLayer(){
         db = OSHashMapTIDDB.getDB();
     }
 
     @Override
-    public void sendRequest(Exchange exchange, Request request) {
+    public void sendRequest(Exchange exchange, Request request){
        OptionSet options = request.getOptions();
 
+        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+            System.out.println("Outgoing OSOption!");
+            for (Option o : options.asSortedList()) {
 
-        OSTID tid = db.getTID(BigInteger.ONE);
+                if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
 
-        if(tid == null){
-            tid = new OSTID(BigInteger.ONE);
-            db.setTID(BigInteger.ONE, tid);
+                    OSTid tid = db.getTID(request.getURI() );
+
+                    if (tid == null) {
+                        //throw new OSTIDException("No Context for URI.");
+                        System.out.print("TID NOT FOUND ABORTING");
+                        System.exit(1);
+                        //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
+                    } else {
+                        ObjectSecurityOption op = (ObjectSecurityOption) o;
+                        op.setTid(tid);
+                        op.create();
+                        System.out.println("Bytes: " );
+                        byte[] serialized2 = o.getValue();
+                        System.out.println(bytesToHex(serialized2));
+                    }
+                }
+            }
         }
 
-        ObjectSecurityOption op = new ObjectSecurityOption(tid,request);
-        options.addOption(op);
-        System.out.println("Bytes: " );
-        byte[] serialized2 = op.getValue();
-        System.out.println(bytesToHex(serialized2));
         super.sendRequest(exchange, request);
     }
     @Override
@@ -59,11 +70,11 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                    System.out.println("FOUND it!");
                    //TODO change to actual lookup by CID extraction
-         OSTID tid = db.getTID(BigInteger.ONE);
+         OSTid tid = db.getTID("dummy");
 
         if(tid == null){
-            tid = new OSTID(BigInteger.ONE);
-            db.setTID(BigInteger.ONE, tid);
+            tid = new OSTid(BigInteger.ONE);
+            db.addTid("dummy", tid);
         }
 
                    if(ObjectSecurityOption.isValidMAC0(o.getValue(), tid)){

@@ -39,6 +39,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.network.stack.objectsecurity.ObjectSecurityOption;
 
 /**
  * The Class CoapClient.
@@ -56,7 +57,10 @@ public class CoapClient {
 	
 	/** The type used for requests (CON is default) */
 	private Type type = Type.CON;
-	
+
+	/** Condition for incuding object security*/
+	private boolean objectSecurity = false;
+
 	private int blockwise = 0;
 	
 	/** The client-specific executor service. */
@@ -257,6 +261,15 @@ public class CoapClient {
 		return this;
 	}
 
+	/**
+	 * Use the object security option
+	 *
+	 * @return the CoAP client
+	 */
+	public CoapClient useObjectSecurity(){
+		this.objectSecurity = true;
+		return this;
+	}
 	/**
 	 * Performs a CoAP ping using the default timeout for requests.
 	 * 
@@ -887,6 +900,12 @@ public class CoapClient {
 	 * @return the request
 	 */
 	protected Request send(Request request, Endpoint outEndpoint) {
+
+		//check if object security should be used
+		if (this.objectSecurity){
+			request.getOptions().addOption(new ObjectSecurityOption(request));
+		}
+
 		// use the specified message type
 		request.setType(this.type);
 

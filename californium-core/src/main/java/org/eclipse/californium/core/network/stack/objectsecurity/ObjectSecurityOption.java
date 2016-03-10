@@ -17,24 +17,29 @@ import static org.eclipse.californium.core.coap.CoAP.MessageFormat.CODE_BITS;
  */
 public class ObjectSecurityOption extends Option{
 
-    private OSTID tid;
+    private OSTid tid;
+    private Message message;
+    private int code;
 
-    public ObjectSecurityOption(OSTID tid, Request message){
+    public ObjectSecurityOption(Request message){
 
-        this(tid, message,message.getCode() == null ? 0 : message.getCode().value);
-
-    }
-
-    public ObjectSecurityOption(OSTID tid, Response message){
-
-        this(tid, message,message.getCode() == null ? 0 : message.getCode().value);
+        this(message,message.getCode() == null ? 0 : message.getCode().value);
 
     }
 
-    private ObjectSecurityOption(OSTID tid, Message message, int code){
+    public ObjectSecurityOption(Response message){
+
+        this(message,message.getCode() == null ? 0 : message.getCode().value);
+
+    }
+
+    private ObjectSecurityOption(Message message, int code){
         number = OptionNumberRegistry.OBJECT_SECURITY;
-        this.tid = tid;
+        this.message = message;
+        this.code = code;
+    }
 
+    public void create(){
         //MAC0
         try {
             //System.out.println("Size: " + getRequestMac0AuthenticatedData(message, code).length);
@@ -45,7 +50,11 @@ public class ObjectSecurityOption extends Option{
         }
     }
 
-    public static boolean isValidMAC0(byte[] payload, OSTID tid){
+    public void setTid(OSTid tid){
+        this.tid = tid;
+    }
+
+    public static boolean isValidMAC0(byte[] payload, OSTid tid){
 
         MAC0Message mac = new MAC0Message();
         try {

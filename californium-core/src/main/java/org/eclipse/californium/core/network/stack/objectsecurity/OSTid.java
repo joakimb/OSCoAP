@@ -3,12 +3,11 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSKeyException;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * Created by joakim on 2016-02-23.
  */
-public class OSTID {
+public class OSTid {
 
 
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
@@ -20,7 +19,7 @@ public class OSTID {
     private byte[] keySender = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
     private byte[] keyReceiver = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
 
-    public OSTID(BigInteger cid){
+    public OSTid(BigInteger cid){
         this.cid = cid;
         this.senderSeq = BigInteger.ZERO;
         this.receiverSeq = BigInteger.ZERO;
@@ -60,8 +59,8 @@ public class OSTID {
 
     @Override
     public boolean equals(Object o){
-        if (!( o instanceof OSTID)) return false;
-        OSTID other = (OSTID)o;
+        if (!( o instanceof OSTid)) return false;
+        OSTid other = (OSTid)o;
         return other.cid.equals(this.cid);
     }
 
