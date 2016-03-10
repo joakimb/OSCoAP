@@ -37,7 +37,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
                     } else {
                         ObjectSecurityOption op = (ObjectSecurityOption) o;
                         op.setTid(tid);
-                        op.create();
+                        op.encryptAndEncode();
                         System.out.println("Bytes: " );
                         byte[] serialized2 = o.getValue();
                         System.out.println(bytesToHex(serialized2));
@@ -70,19 +70,16 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                    System.out.println("FOUND it!");
                    //TODO change to actual lookup by CID extraction
-         OSTid tid = db.getTID("dummy");
+                   OSTid tid = db.getTID(request.getURI());
 
-        if(tid == null){
-            tid = new OSTid(BigInteger.ONE);
-            db.addTid("dummy", tid);
-        }
-
-                   if(ObjectSecurityOption.isValidMAC0(o.getValue(), tid)){
-
-                       System.out.println("valid!");
-                   } else {
-                       System.out.println("NOT valid!");
+                   if(tid == null){
+                       //TODO, handle this
+                       System.out.println("ERRORORORORORORO");
                    }
+                   byte[] payload = ObjectSecurityOption.decryptAndDecode(o.getValue(),tid);
+                   System.out.println("PAYLOAD DECRYPTED: ");
+                   System.out.println(bytesToHex(payload));
+
                }
             }
         }

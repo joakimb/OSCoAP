@@ -1,6 +1,7 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
-import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSKeyException;
+import COSE.AlgorithmID;
+import com.upokecenter.cbor.CBORObject;
 
 import java.math.BigInteger;
 
@@ -16,8 +17,8 @@ public class OSTid {
     private BigInteger senderSalt;
     private BigInteger receiverSalt;
     private int replayProtectionWin = 0;
-    private byte[] keySender = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
-    private byte[] keyReceiver = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+    private byte[] keySender = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    private byte[] keyReceiver= {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
     public OSTid(BigInteger cid){
         this.cid = cid;
@@ -25,7 +26,7 @@ public class OSTid {
         this.receiverSeq = BigInteger.ZERO;
     }
 
-    public byte[] getSenderKey() throws OSKeyException{
+    public byte[] getSenderKey(){
         return keySender;
     }
 
@@ -33,8 +34,8 @@ public class OSTid {
         return keyReceiver;
     }
 
-    public int getAlg() {
-        return OSNumberRegistry.MAC0;
+    public CBORObject getAlg() {
+        return AlgorithmID.AES_CCM_16_64_128.AsCBOR();
     }
 
     public byte[] getCid(){

@@ -2,10 +2,10 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.*;
 import com.upokecenter.cbor.CBORObject;
+import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
-import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSKeyException;
 
 import java.util.List;
 
@@ -39,62 +39,55 @@ public class ObjectSecurityOption extends Option{
         this.code = code;
     }
 
-    public void create(){
-        //MAC0
-        try {
-            //System.out.println("Size: " + getRequestMac0AuthenticatedData(message, code).length);
-            value = createMAC0COSESign(getRequestMac0AuthenticatedData(message, code)).EncodeToBytes();
-        } catch (CoseException e){
-            System.out.println("COSEException: " +  e.getStackTrace() + " end:");
-            System.exit(1);
-        }
-    }
-
     public void setTid(OSTid tid){
         this.tid = tid;
     }
 
-    public static boolean isValidMAC0(byte[] payload, OSTid tid){
-
-        MAC0Message mac = new MAC0Message();
-        try {
-            mac.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
-        } catch (CoseException e) {
-            e.printStackTrace();
-        }
-        mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
-
-        boolean result = false;
-
-        try {
-            byte[] key = tid.getReceiverKey();
-            result = mac.Validate(key);
-        } catch (CoseException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        return result;
-    }
-
-    private MAC0Message createMAC0COSESign(byte[] content){
-        MAC0Message mac = new MAC0Message();
-        mac.SetContent(content);
-        mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
+    public void encryptAndEncode(){
+        Encrypt0Message enc = new Encrypt0Message();
+        byte[] tmp = new byte[32];
+        enc.SetContent(tmp);
+        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
         try {
             byte[] key = tid.getSenderKey();
-            mac.Create(key);
+            enc.Encrypt(key);
         } catch (CoseException e){
             e.printStackTrace();
             System.exit(1);
-        } catch  (OSKeyException e){
+        } catch (InvalidCipherTextException e) {
             e.printStackTrace();
-            System.exit(1);
         }
-        return mac;
+        //add encypted msg to payload
+        try {
+            value = enc.EncodeToBytes();
+        } catch (CoseException e) {
+            e.printStackTrace();
+        }
     }
 
-    private byte[] getRequestMac0AuthenticatedData(Message message, int code){
+    public static byte[] decryptAndDecode(byte[] payload, OSTid tid){
+
+        Encrypt0Message enc = new Encrypt0Message();
+        try {
+            enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
+        } catch (CoseException e) {
+            e.printStackTrace();
+        }
+        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
+        byte[] result = null;
+        try {
+            byte[] key = tid.getReceiverKey();
+            result = enc.Decrypt(key);
+        } catch (CoseException e) {
+            e.printStackTrace();
+            System.exit(1);
+        } catch (InvalidCipherTextException e) {
+            e.printStackTrace();
+        }
+        return result;
+
+    }
+   private byte[] getRequestMac0AuthenticatedData(Message message, int code){
         DatagramWriter writer = new DatagramWriter();
 
         writeSMHeader(writer);
