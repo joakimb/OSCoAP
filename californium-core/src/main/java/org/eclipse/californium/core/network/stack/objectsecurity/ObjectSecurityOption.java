@@ -58,13 +58,10 @@ public class ObjectSecurityOption extends Option{
         boolean result = false;
 
         try {
-            byte[] key = tid.getKey();
+            byte[] key = tid.getReceiverKey();
             result = mac.Validate(key);
-        } catch (CoseException e){
+        } catch (CoseException e) {
             e.printStackTrace();
-            System.exit(1);
-        } catch  (OSKeyException e){
-            System.out.println("Key Exception");
             System.exit(1);
         }
 
@@ -76,7 +73,7 @@ public class ObjectSecurityOption extends Option{
         mac.SetContent(content);
         mac.addAttribute(HeaderKeys.Algorithm, AlgorithmID.HMAC_SHA_256_64.AsCBOR(), Attribute.DontSendAttributes);
         try {
-            byte[] key = tid.getKey();
+            byte[] key = tid.getSenderKey();
             mac.Create(key);
         } catch (CoseException e){
             e.printStackTrace();
@@ -102,7 +99,7 @@ public class ObjectSecurityOption extends Option{
     //
     private void writeSMHeader(DatagramWriter writer ){
         writer.writeBytes(tid.getCid());
-        writer.write(tid.getSeq(), 3);
+        writer.writeBytes(tid.getSenderSeq().toByteArray());
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0

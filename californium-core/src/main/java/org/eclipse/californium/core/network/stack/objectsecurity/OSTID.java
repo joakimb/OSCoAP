@@ -12,34 +12,51 @@ public class OSTID {
 
 
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
-    private int seq;    //3 bytes
+    private BigInteger senderSeq;    //1-8 bytes
+    private BigInteger receiverSeq;    //1-8 bytes
+    private BigInteger senderSalt;
+    private BigInteger receiverSalt;
+    private int replayProtectionWin = 0;
+    private byte[] keySender = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+    private byte[] keyReceiver = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
 
     public OSTID(BigInteger cid){
         this.cid = cid;
+        this.senderSeq = BigInteger.ZERO;
+        this.receiverSeq = BigInteger.ZERO;
     }
 
-    //TODO dummy lookup
-    public byte[] getKey() throws OSKeyException{
-        byte[] key;
-        byte[] key01 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
-        byte[] key02 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2};
-        byte[] key03 = {0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x31};
-
-        int keyId01 = 1;
-        int keyId02 = 2;
-
-        //if (keyId == keyId01) key = key01;
-        //else if (keyId == keyId02) key = key02;
-        //else throw new OSKeyException("Key ID does not correspond to an actual known key.");
-        key = key03; //TODO change
-        return key;
+    public byte[] getSenderKey() throws OSKeyException{
+        return keySender;
     }
 
-    //TODO dummy lookup
+    public byte[] getReceiverKey(){
+        return keyReceiver;
+    }
+
     public int getAlg() {
         return OSNumberRegistry.MAC0;
     }
 
+    public byte[] getCid(){
+        return cid.toByteArray();
+    }
+
+    public BigInteger getSenderSeq(){
+        return senderSeq;
+    }
+
+    public BigInteger getReceiverSeq(){
+        return receiverSeq;
+    }
+
+    public BigInteger getSenderSalt() {
+        return senderSalt;
+    }
+
+    public BigInteger getReceiverSalt() {
+        return receiverSalt;
+    }
 
     @Override
     public boolean equals(Object o){
@@ -48,11 +65,4 @@ public class OSTID {
         return other.cid.equals(this.cid);
     }
 
-    public byte[] getCid(){
-        return cid.toByteArray();
-    }
-
-    public int getSeq(){
-        return seq;
-    }
 }
