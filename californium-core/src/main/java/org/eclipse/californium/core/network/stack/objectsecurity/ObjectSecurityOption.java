@@ -48,6 +48,9 @@ public class ObjectSecurityOption extends Option{
         byte[] tmp = new byte[32];
         enc.SetContent(tmp);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
+        enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
+        CBORObject cobj = CBORObject.FromObject(tid.getSenderSeq());
+        enc.addAttribute(HeaderKeys.IV, cobj,Attribute.ProtectedAttributes);
         try {
             byte[] key = tid.getSenderKey();
             enc.Encrypt(key);
