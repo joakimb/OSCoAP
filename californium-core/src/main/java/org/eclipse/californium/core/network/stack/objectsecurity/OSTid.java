@@ -12,8 +12,8 @@ public class OSTid {
 
 
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
-    private BigInteger senderSeq;    //1-8 bytes
-    private BigInteger receiverSeq;    //1-8 bytes
+    private byte[] senderSeq;    //1-8 bytes
+    private byte[] receiverSeq;    //1-8 bytes
     private BigInteger senderSalt;
     private BigInteger receiverSalt;
     private int replayProtectionWin = 0;
@@ -22,8 +22,8 @@ public class OSTid {
 
     public OSTid(BigInteger cid){
         this.cid = cid;
-        this.senderSeq = BigInteger.ZERO;
-        this.receiverSeq = BigInteger.ZERO;
+        this.senderSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+        this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
     }
 
     public byte[] getSenderKey(){
@@ -42,11 +42,11 @@ public class OSTid {
         return cid.toByteArray();
     }
 
-    public BigInteger getSenderSeq(){
+    public byte[] getSenderSeq(){
         return senderSeq;
     }
 
-    public BigInteger getReceiverSeq(){
+    public byte[] getReceiverSeq(){
         return receiverSeq;
     }
 

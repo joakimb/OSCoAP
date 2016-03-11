@@ -49,8 +49,7 @@ public class ObjectSecurityOption extends Option{
         enc.SetContent(tmp);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
         enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
-        CBORObject cobj = CBORObject.FromObject(tid.getSenderSeq());
-        enc.addAttribute(HeaderKeys.IV, cobj,Attribute.ProtectedAttributes);
+        enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
         try {
             byte[] key = tid.getSenderKey();
             enc.Encrypt(key);
@@ -77,7 +76,10 @@ public class ObjectSecurityOption extends Option{
             e.printStackTrace();
         }
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
+        //enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
+        //enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getReceiverSeq()),Attribute.ProtectedAttributes);
         byte[] result = null;
+
         try {
             byte[] key = tid.getReceiverKey();
             result = enc.Decrypt(key);
@@ -104,7 +106,7 @@ public class ObjectSecurityOption extends Option{
     //
     private void writeSMHeader(DatagramWriter writer ){
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(tid.getSenderSeq().toByteArray());
+        writer.writeBytes(tid.getSenderSeq());
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0
