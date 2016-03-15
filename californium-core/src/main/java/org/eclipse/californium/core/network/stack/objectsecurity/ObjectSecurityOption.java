@@ -6,6 +6,7 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
+import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
 
 import java.util.List;
 
@@ -15,11 +16,16 @@ import static org.eclipse.californium.core.coap.CoAP.MessageFormat.CODE_BITS;
 /**
  * Created by joakim on 2016-02-23.
  */
-public class ObjectSecurityOption extends Option{
+public class ObjectSecurityOption extends Option {
 
     private OSTid tid;
     private Message message;
     private int code;
+
+    public ObjectSecurityOption(Option option, Request message){
+        this(message);
+        this.value = option.getValue();
+    }
 
     public ObjectSecurityOption(Request message){
 
@@ -45,14 +51,18 @@ public class ObjectSecurityOption extends Option{
 
     public void encryptAndEncode(){
         Encrypt0Message enc = new Encrypt0Message();
-        byte[] tmp = new byte[32];
-        enc.SetContent(tmp);
+
+        byte[] confidential = getConfidentialData(message);
+        byte[] integrityProtected = getAdditionalAuthenticatedData(message,code);
+
+        enc.SetContent(confidential);
+        enc.setExternal(integrityProtected);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
         enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
-        enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
+        enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
         try {
             byte[] key = tid.getSenderKey();
-            enc.Encrypt(key);
+            enc.encrypt(key);
         } catch (CoseException e){
             e.printStackTrace();
             System.exit(1);
@@ -67,7 +77,7 @@ public class ObjectSecurityOption extends Option{
         }
     }
 
-    public static byte[] decryptAndDecode(byte[] payload, OSTid tid){
+    public byte[] decryptAndDecode(byte[] payload, OSTid tid){
 
         Encrypt0Message enc = new Encrypt0Message();
         try {
@@ -75,38 +85,60 @@ public class ObjectSecurityOption extends Option{
         } catch (CoseException e) {
             e.printStackTrace();
         }
+        byte[] integrityProtected = getAdditionalAuthenticatedData(message,code);
+
+        enc.setExternal(integrityProtected);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
-        //enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
-        //enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getReceiverSeq()),Attribute.ProtectedAttributes);
         byte[] result = null;
 
         try {
             byte[] key = tid.getReceiverKey();
-            result = enc.Decrypt(key);
+            result = enc.decrypt(key);
         } catch (CoseException e) {
             e.printStackTrace();
             System.exit(1);
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
+
         return result;
 
     }
-   private byte[] getRequestMac0AuthenticatedData(Message message, int code){
+
+   private byte[] getConfidentialData(Message message){
         DatagramWriter writer = new DatagramWriter();
-
-        writeSMHeader(writer);
-        writeCoAPHeader(writer, code);
-        writeOptions(writer, message);
+        writeConfidentialOptions(writer, message);
+        writePayloadDelim(writer);
         writePayload(writer, message);
-
         return writer.toByteArray();
     }
 
+    private byte[] getAdditionalAuthenticatedData(Message message, int code){
+        //TODO include data from just under fig 6 in cose4
+        DatagramWriter writer = new DatagramWriter();
+        writeCoAPHeader(writer, code);
+        writeAlgorithm(writer);
+        writeIPOptions(writer);
+        writeTid(writer);
+        return writer.toByteArray();
+    }
+
+    private void writeIPOptions(DatagramWriter writer){
+       //TODO
+    }
+
+    private void writeAlgorithm(DatagramWriter writer){
+        //TODO
+    }
+
+    private void writePayloadDelim(DatagramWriter writer){
+        writer.write(255,8);
+    }
+
     //
-    private void writeSMHeader(DatagramWriter writer ){
+    private void writeTid(DatagramWriter writer ){
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(tid.getSenderSeq());
+        writer.writeBytes(tid.getSenderSeq());//TODO strip leading zeroes
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0
@@ -123,7 +155,7 @@ public class ObjectSecurityOption extends Option{
     //all CoAP options present which are to be Integrity
     //Protected according to draft-selander-ace-object-security-03
     //in the order given by the option number
-    private void writeOptions(DatagramWriter writer, Message message){
+    private void writeConfidentialOptions(DatagramWriter writer, Message message){
         List<Option> options = message.getOptions().asSortedList(); // already sorted
         int previousOptionNumber = 0;
         for (Option option : options) {

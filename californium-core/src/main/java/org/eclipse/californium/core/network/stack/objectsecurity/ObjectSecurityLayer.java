@@ -4,8 +4,6 @@ import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
-import java.math.BigInteger;
-
 /**
  * Created by joakim on 04/02/16.
  */
@@ -70,16 +68,20 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                    System.out.println("FOUND it!");
                    //TODO change to actual lookup by CID extraction
-                   OSTid tid = db.getTID(request.getURI());
+                    OSTid tid = db.getTID(request.getURI() );
 
-                   if(tid == null){
-                       //TODO, handle this
-                       System.out.println("ERRORORORORORORO");
-                   }
-                   byte[] payload = ObjectSecurityOption.decryptAndDecode(o.getValue(),tid);
-                   System.out.println("PAYLOAD DECRYPTED: ");
-                   System.out.println(bytesToHex(payload));
-
+                    if (tid == null) {
+                        //throw new OSTIDException("No Context for URI.");
+                        System.out.print("TID NOT FOUND ABORTING");
+                        System.exit(1);
+                        //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
+                    } else {
+                        ObjectSecurityOption op = new ObjectSecurityOption(o, request);
+                        op.setTid(tid);
+                        byte[] payload = op.decryptAndDecode(o.getValue(), tid);
+                        System.out.println("PAYLOAD DECRYPTED: ");
+                        System.out.println(bytesToHex(payload));
+                    }
                }
             }
         }
