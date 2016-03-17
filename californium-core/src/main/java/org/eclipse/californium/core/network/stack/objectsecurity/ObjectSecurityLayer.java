@@ -2,6 +2,7 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
+import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
 import java.math.BigInteger;
@@ -57,9 +58,6 @@ public class ObjectSecurityLayer extends AbstractLayer {
                         if(hasMaxAge){
                             options.setMaxAge(0);
                         }
-                        System.out.println("Bytes: " );
-                        byte[] serialized2 = o.getValue();
-                        System.out.println(bytesToHex(serialized2));
                     }
                 }
             }
@@ -87,15 +85,11 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                if(o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY){
 
-                   System.out.println("FOUND it!");
-                   //TODO change to actual lookup by CID extraction
                     ObjectSecurityOption op = new ObjectSecurityOption(o, request);
-
-
-
                     byte[] payload = op.decryptAndDecode(o.getValue());
                     System.out.println("PAYLOAD DECRYPTED: ");
                     System.out.println(bytesToHex(payload));
+                    op.readConfidentialData(new DatagramReader(payload));
                }
             }
         }

@@ -5,6 +5,7 @@ import com.upokecenter.cbor.CBORObject;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.Message;
+import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
 
@@ -118,8 +119,10 @@ public class ObjectSecurityOption extends Option {
    private byte[] getConfidentialData(Message message){
         DatagramWriter writer = new DatagramWriter();
         writeConfidentialOptions(writer, message);
-        writePayloadDelim(writer);
-        writePayload(writer, message);
+        if (message.getPayload() != null && message.getPayload().length > 0) {
+            writePayloadDelim(writer);
+            writePayload(writer, message);
+        }
         return writer.toByteArray();
     }
 
@@ -170,6 +173,9 @@ public class ObjectSecurityOption extends Option {
         int previousOptionNumber = 0;
         for (Option option : options) {
 
+            //TODO Kind of a hack, refactor so that ObjectSecurityOption is not present at this stage
+            if (option.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) continue;
+
             // write 4-bit option delta
             int optionDelta = option.getNumber() - previousOptionNumber;
             int optionDeltaNibble = getOptionNibble(optionDelta);
@@ -202,11 +208,47 @@ public class ObjectSecurityOption extends Option {
         }
     }
 
+    public void readConfidentialData(DatagramReader reader){
+        int currentOption = 0;
+        byte nextByte = 0;
+        while(reader.bytesAvailable()) {
+            nextByte = reader.readNextByte();
+            if (nextByte != PAYLOAD_MARKER) {
+                // the first 4 bits of the byte represent the option delta
+                int optionDeltaNibble = (0xF0 & nextByte) >> 4;
+                currentOption += readOptionValueFromNibble(reader, optionDeltaNibble);
+
+                // the second 4 bits represent the option length
+                int optionLengthNibble = (0x0F & nextByte);
+                int optionLength = readOptionValueFromNibble(reader, optionLengthNibble);
+
+                // read option
+                Option option = new Option(currentOption);
+                option.setValue(reader.readBytes(optionLength));
+
+                // add option to message
+                message.getOptions().addOption(option);
+            } else break;
+        }
+
+        if (nextByte == PAYLOAD_MARKER) {
+            // the presence of a marker followed by a zero-length payload must be processed as a message format error
+            if (!reader.bytesAvailable())
+                throw new IllegalStateException();
+
+            // get payload
+            message.setPayload(reader.readBytesLeft());
+        } else {
+            message.setPayload(new byte[0]); // or null?
+        }
+    }
+
     //payload
     private void writePayload(DatagramWriter writer, Message message){
         //TODO test with payload
         byte[] payload = message.getPayload();
         if (payload != null && payload.length > 0) {
+            System.out.println(" PAYLOAD PRESENT");
             // if payload is present and of non-zero length, it is prefixed by
             // an one-byte Payload Marker (0xFF) which indicates the end of
             // options and the start of the payload
@@ -234,6 +276,30 @@ public class ObjectSecurityOption extends Option {
             throw new IllegalArgumentException("Unsupported option delta "+optionValue);
         }
     }
+
+    //from DataParser
+    /**
+	 * Calculates the value used in the extended option fields as specified in
+	 * RFC 7252, Section 3.1
+	 *
+	 * @param nibble
+	 *            the 4-bit option header value.
+	 * @param datagram
+	 *            the datagram.
+	 * @return the value calculated from the nibble and the extended option
+	 *         value.
+	 */
+	private int readOptionValueFromNibble(DatagramReader reader, int nibble) {
+		if (nibble <= 12) {
+			return nibble;
+		} else if (nibble == 13) {
+			return reader.read(8) + 13;
+		} else if (nibble == 14) {
+			return reader.read(16) + 269;
+		} else {
+			throw new IllegalArgumentException("Unsupported option delta "+nibble);
+		}
+	}
 
     //TODO remove development method:
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();

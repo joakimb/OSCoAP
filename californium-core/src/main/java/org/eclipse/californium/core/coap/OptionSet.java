@@ -120,6 +120,7 @@ public class OptionSet {
 			others.clear();
 	}
 
+
 	/**
 	 * Instantiates a new option set equal to the specified one by deep-copying it.
 	 * @param origin the origin to be copied
@@ -1350,7 +1351,7 @@ public class OptionSet {
 		}
 		return this;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
