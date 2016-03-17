@@ -48,7 +48,7 @@ public class ObjectSecurityTest {
             client.useObjectSecurity();
         OSTid tid = new OSTid(BigInteger.ONE);
         OSTidDB db = OSHashMapTIDDB.getDB();
-        db.addTid("coap://localhost/hello?data=world",tid);
+        db.addTid(tid.getCid(),tid);
 
 
             String content = client.get().getResponseText();

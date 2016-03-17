@@ -4,6 +4,8 @@ import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
+import java.math.BigInteger;
+
 /**
  * Created by joakim on 04/02/16.
  */
@@ -25,17 +27,36 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                 if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
 
-                    OSTid tid = db.getTID(request.getURI() );
+                    OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
 
                     if (tid == null) {
                         //throw new OSTIDException("No Context for URI.");
                         System.out.print("TID NOT FOUND ABORTING");
                         System.exit(1);
-                        //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
+                        //TODO change behaviour to ignore OS or throw Exception earlier i chain,
+                        // e.g. in CoapClient.java
                     } else {
+                        boolean hasProxyUri = options.hasProxyUri();
+                        String proxyUri = null;
+                        if (hasProxyUri){
+                            proxyUri = options.getProxyUri();
+                            options.removeProxyUri();
+                        }
+                        boolean hasMaxAge = options.hasMaxAge();
+                        if (hasMaxAge){
+                            options.removeMaxAge();
+                        }
                         ObjectSecurityOption op = (ObjectSecurityOption) o;
                         op.setTid(tid);
                         op.encryptAndEncode();
+                        options.clear();
+                        options.addOption(op);
+                        if(hasProxyUri){
+                            options.setProxyUri(proxyUri);
+                        }
+                        if(hasMaxAge){
+                            options.setMaxAge(0);
+                        }
                         System.out.println("Bytes: " );
                         byte[] serialized2 = o.getValue();
                         System.out.println(bytesToHex(serialized2));
@@ -68,20 +89,13 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
                    System.out.println("FOUND it!");
                    //TODO change to actual lookup by CID extraction
-                    OSTid tid = db.getTID(request.getURI() );
+                    ObjectSecurityOption op = new ObjectSecurityOption(o, request);
 
-                    if (tid == null) {
-                        //throw new OSTIDException("No Context for URI.");
-                        System.out.print("TID NOT FOUND ABORTING");
-                        System.exit(1);
-                        //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
-                    } else {
-                        ObjectSecurityOption op = new ObjectSecurityOption(o, request);
-                        op.setTid(tid);
-                        byte[] payload = op.decryptAndDecode(o.getValue(), tid);
-                        System.out.println("PAYLOAD DECRYPTED: ");
-                        System.out.println(bytesToHex(payload));
-                    }
+
+
+                    byte[] payload = op.decryptAndDecode(o.getValue());
+                    System.out.println("PAYLOAD DECRYPTED: ");
+                    System.out.println(bytesToHex(payload));
                }
             }
         }

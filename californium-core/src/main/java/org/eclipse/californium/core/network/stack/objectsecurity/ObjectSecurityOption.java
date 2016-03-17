@@ -61,6 +61,7 @@ public class ObjectSecurityOption extends Option {
         enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
         enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
         try {
+
             byte[] key = tid.getSenderKey();
             enc.encrypt(key);
         } catch (CoseException e){
@@ -77,7 +78,7 @@ public class ObjectSecurityOption extends Option {
         }
     }
 
-    public byte[] decryptAndDecode(byte[] payload, OSTid tid){
+    public byte[] decryptAndDecode(byte[] payload){
 
         Encrypt0Message enc = new Encrypt0Message();
         try {
@@ -85,10 +86,19 @@ public class ObjectSecurityOption extends Option {
         } catch (CoseException e) {
             e.printStackTrace();
         }
+        byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
+        tid = OSHashMapTIDDB.getDB().getTID(cid);
         byte[] integrityProtected = getAdditionalAuthenticatedData(message,code);
 
         enc.setExternal(integrityProtected);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
+
+        if (tid == null) {
+            //throw new OSTIDException("No Context for URI.");
+            System.out.print("TID NOT FOUND ABORTING");
+            System.exit(1);
+            //TODO change behaviour to ignore OS or throw Exception earlier i chain,
+        }
         byte[] result = null;
 
         try {
@@ -225,4 +235,16 @@ public class ObjectSecurityOption extends Option {
         }
     }
 
+    //TODO remove development method:
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
 }
+

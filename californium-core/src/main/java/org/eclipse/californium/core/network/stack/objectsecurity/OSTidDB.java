@@ -5,6 +5,6 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
  */
 public interface OSTidDB {
 
-    OSTid getTID(String uri);
-    void addTid(String uri, OSTid tidObj);
+    OSTid getTID(byte[] cid);
+    void addTid(byte[] cid, OSTid tidObj);
 }
