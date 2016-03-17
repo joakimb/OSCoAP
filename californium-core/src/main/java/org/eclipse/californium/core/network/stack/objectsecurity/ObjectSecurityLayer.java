@@ -20,51 +20,57 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void sendRequest(Exchange exchange, Request request){
-       OptionSet options = request.getOptions();
+        OptionSet options = request.getOptions();
+        ObjectSecurityOption op = (ObjectSecurityOption) filterOSOption(options);
+        if ( op != null) {
 
+            OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
+
+            if (tid == null) {
+                //throw new OSTIDException("No Context for URI.");
+                System.out.print("TID NOT FOUND ABORTING");
+                System.exit(1);
+                //TODO change behaviour to ignore OS or throw Exception earlier i chain,
+                // e.g. in CoapClient.java
+            } else {
+                boolean hasProxyUri = options.hasProxyUri();
+                String proxyUri = null;
+                if (hasProxyUri) {
+                    proxyUri = options.getProxyUri();
+                    options.removeProxyUri();
+                }
+                boolean hasMaxAge = options.hasMaxAge();
+                if (hasMaxAge) {
+                    options.removeMaxAge();
+                }
+                op.setTid(tid);
+                op.encryptAndEncode();
+                options.clear();
+                options.addOption(op);
+                if (hasProxyUri) {
+                    options.setProxyUri(proxyUri);
+                }
+                if (hasMaxAge) {
+                    options.setMaxAge(0);
+                }
+            }
+        }
+        super.sendRequest(exchange, request);
+    }
+
+    private Option filterOSOption(OptionSet options){
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
             System.out.println("Outgoing OSOption!");
             for (Option o : options.asSortedList()) {
 
                 if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
-
-                    OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
-
-                    if (tid == null) {
-                        //throw new OSTIDException("No Context for URI.");
-                        System.out.print("TID NOT FOUND ABORTING");
-                        System.exit(1);
-                        //TODO change behaviour to ignore OS or throw Exception earlier i chain,
-                        // e.g. in CoapClient.java
-                    } else {
-                        boolean hasProxyUri = options.hasProxyUri();
-                        String proxyUri = null;
-                        if (hasProxyUri){
-                            proxyUri = options.getProxyUri();
-                            options.removeProxyUri();
-                        }
-                        boolean hasMaxAge = options.hasMaxAge();
-                        if (hasMaxAge){
-                            options.removeMaxAge();
-                        }
-                        ObjectSecurityOption op = (ObjectSecurityOption) o;
-                        op.setTid(tid);
-                        op.encryptAndEncode();
-                        options.clear();
-                        options.addOption(op);
-                        if(hasProxyUri){
-                            options.setProxyUri(proxyUri);
-                        }
-                        if(hasMaxAge){
-                            options.setMaxAge(0);
-                        }
-                    }
+                    return o;
                 }
             }
         }
-
-        super.sendRequest(exchange, request);
+        return null;
     }
+
     @Override
     public void sendResponse(Exchange exchange, Response response) {
         super.sendResponse(exchange,response);
@@ -77,21 +83,16 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveRequest(Exchange exchange, Request request) {
+
         OptionSet options = request.getOptions();
+        Option o = filterOSOption(options);
+        if ( o != null) {
 
-        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
-            System.out.println("Incoming OSOption!");
-            for (Option o : options.asSortedList()) {
-
-               if(o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY){
-
-                    ObjectSecurityOption op = new ObjectSecurityOption(o, request);
-                    byte[] payload = op.decryptAndDecode(o.getValue());
-                    System.out.println("PAYLOAD DECRYPTED: ");
-                    System.out.println(bytesToHex(payload));
-                    op.readConfidentialData(new DatagramReader(payload));
-               }
-            }
+            ObjectSecurityOption op = new ObjectSecurityOption(o, request);
+            byte[] payload = op.decryptAndDecode(op.getValue());
+            System.out.println("PAYLOAD DECRYPTED: ");
+            System.out.println(bytesToHex(payload));
+            op.readConfidentialData(new DatagramReader(payload));
         }
         super.receiveRequest(exchange, request);
     }
