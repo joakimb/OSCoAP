@@ -903,7 +903,7 @@ public class CoapClient {
 
 		//check if object security should be used
 		if (this.objectSecurity){
-			request.getOptions().addOption(new ObjectSecurityOption(request));
+			request.getOptions().addOption(new ObjectSecurityOption());
 		}
 
 		// use the specified message type

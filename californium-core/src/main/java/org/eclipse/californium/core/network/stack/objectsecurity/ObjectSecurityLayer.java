@@ -6,6 +6,7 @@ import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Created by joakim on 04/02/16.
@@ -21,8 +22,24 @@ public class ObjectSecurityLayer extends AbstractLayer {
     @Override
     public void sendRequest(Exchange exchange, Request request){
         OptionSet options = request.getOptions();
-        ObjectSecurityOption op = (ObjectSecurityOption) filterOSOption(options);
-        if ( op != null) {
+        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+            //This cast is ok since we explicity initialize an OSOption when sending
+            //TODO, make so that cast possible when receiving
+            ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
+
+            //TODO, this is a bit stupid
+            boolean hasProxyUri = options.hasProxyUri();
+            String proxyUri = null;
+            if (hasProxyUri) {
+                proxyUri = options.getProxyUri();
+                options.removeProxyUri();
+            }
+            boolean hasMaxAge = options.hasMaxAge();
+            if (hasMaxAge) {
+                options.removeMaxAge();
+            }
+
+
 
             OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
 
@@ -33,43 +50,25 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 //TODO change behaviour to ignore OS or throw Exception earlier i chain,
                 // e.g. in CoapClient.java
             } else {
-                boolean hasProxyUri = options.hasProxyUri();
-                String proxyUri = null;
-                if (hasProxyUri) {
-                    proxyUri = options.getProxyUri();
-                    options.removeProxyUri();
-                }
-                boolean hasMaxAge = options.hasMaxAge();
-                if (hasMaxAge) {
-                    options.removeMaxAge();
-                }
-                op.setTid(tid);
-                op.encryptAndEncode();
+                byte[] confidential = OSSerializer.serializeConfidentialData(options, request.getPayload());
+                byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(request.getCode().value, tid);
+
+                osOpt.encryptAndEncode(confidential, aad, tid);
                 options.clear();
-                options.addOption(op);
+                options.addOption(osOpt);
                 if (hasProxyUri) {
                     options.setProxyUri(proxyUri);
                 }
                 if (hasMaxAge) {
                     options.setMaxAge(0);
                 }
+                request.setPayload(new byte[0]);
             }
+
         }
         super.sendRequest(exchange, request);
     }
 
-    private Option filterOSOption(OptionSet options){
-        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
-            System.out.println("Outgoing OSOption!");
-            for (Option o : options.asSortedList()) {
-
-                if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
-                    return o;
-                }
-            }
-        }
-        return null;
-    }
 
     @Override
     public void sendResponse(Exchange exchange, Response response) {
@@ -88,11 +87,17 @@ public class ObjectSecurityLayer extends AbstractLayer {
         Option o = filterOSOption(options);
         if ( o != null) {
 
-            ObjectSecurityOption op = new ObjectSecurityOption(o, request);
-            byte[] payload = op.decryptAndDecode(op.getValue());
+            ObjectSecurityOption op = new ObjectSecurityOption(o);
+
+            byte[] content = op.decryptAndDecode(op.getValue(), request.getCode().value);
+            List<Option> optionList = OSSerializer.readConfidentialOptions(content);
+            for (Option option : optionList) {
+                request.getOptions().addOption(option);
+            }
+            byte[] payload = OSSerializer.readPayload(content);
+            request.setPayload(payload);
             System.out.println("PAYLOAD DECRYPTED: ");
-            System.out.println(bytesToHex(payload));
-            op.readConfidentialData(new DatagramReader(payload));
+            System.out.println(bytesToHex(content));
         }
         super.receiveRequest(exchange, request);
     }
@@ -105,6 +110,17 @@ public class ObjectSecurityLayer extends AbstractLayer {
     @Override
     public void receiveEmptyMessage(Exchange exchange, EmptyMessage message) {
         super.receiveEmptyMessage(exchange, message);
+    }
+
+    private static Option filterOSOption(OptionSet options){
+        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+            for (Option o : options.asSortedList()) {
+                if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
+                    return o;
+                }
+            }
+        }
+        return null;
     }
 
     //TODO remove development method:
