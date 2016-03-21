@@ -19,97 +19,72 @@ public class ObjectSecurityLayer extends AbstractLayer {
         db = OSHashMapTIDDB.getDB();
     }
 
-    @Override
-    public void sendRequest(Exchange exchange, Request request){
-        OptionSet options = request.getOptions();
+    private void prepareSend(Message message, int code){
+        OptionSet options = message.getOptions();
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+
             //This cast is ok since we explicity initialize an OSOption when sending
-            //TODO, make so that cast possible when receiving
             ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
-
-            //TODO, this is a bit stupid
-            boolean hasProxyUri = options.hasProxyUri();
-            String proxyUri = null;
-            if (hasProxyUri) {
-                proxyUri = options.getProxyUri();
-                options.removeProxyUri();
-            }
-            boolean hasMaxAge = options.hasMaxAge();
-            if (hasMaxAge) {
-                options.removeMaxAge();
-            }
-
-
-
             OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
 
             if (tid == null) {
-                //throw new OSTIDException("No Context for URI.");
                 System.out.print("TID NOT FOUND ABORTING");
                 System.exit(1);
-                //TODO change behaviour to ignore OS or throw Exception earlier i chain,
-                // e.g. in CoapClient.java
+                //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
             } else {
-                byte[] confidential = OSSerializer.serializeConfidentialData(options, request.getPayload());
-                byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(request.getCode().value, tid);
+                byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
+                byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(code, tid);
 
                 osOpt.encryptAndEncode(confidential, aad, tid);
-                options.clear();
-                options.addOption(osOpt);
-                if (hasProxyUri) {
-                    options.setProxyUri(proxyUri);
-                }
-                if (hasMaxAge) {
-                    options.setMaxAge(0);
-                }
-                request.setPayload(new byte[0]);
+                message.setPayload(new byte[0]);
+                message.setOptions(juggleOptions(options, osOpt));
+
             }
 
         }
-        super.sendRequest(exchange, request);
     }
 
-
-    @Override
-    public void sendResponse(Exchange exchange, Response response) {
-        super.sendResponse(exchange,response);
-    }
-
-    @Override
-    public void sendEmptyMessage(Exchange exchange, EmptyMessage message) {
-        super.sendEmptyMessage(exchange,message);
-    }
-
-    @Override
-    public void receiveRequest(Exchange exchange, Request request) {
-
-        OptionSet options = request.getOptions();
+    private void prepareReceive(Message message, int code){
+        OptionSet options = message.getOptions();
         Option o = filterOSOption(options);
         if ( o != null) {
 
             ObjectSecurityOption op = new ObjectSecurityOption(o);
 
-            byte[] content = op.decryptAndDecode(op.getValue(), request.getCode().value);
+            byte[] content = op.decryptAndDecode(op.getValue(), code);
             List<Option> optionList = OSSerializer.readConfidentialOptions(content);
             for (Option option : optionList) {
-                request.getOptions().addOption(option);
+                message.getOptions().addOption(option);
             }
             byte[] payload = OSSerializer.readPayload(content);
-            request.setPayload(payload);
+            message.setPayload(payload);
             System.out.println("PAYLOAD DECRYPTED: ");
             System.out.println(bytesToHex(content));
         }
-        super.receiveRequest(exchange, request);
+
     }
 
-    @Override
-    public void receiveResponse(Exchange exchange, Response response) {
-        super.receiveResponse(exchange,response);
-    }
-
-    @Override
-    public void receiveEmptyMessage(Exchange exchange, EmptyMessage message) {
-        super.receiveEmptyMessage(exchange, message);
+    private OptionSet juggleOptions(OptionSet options, ObjectSecurityOption osOpt) {
+        //TODO, this is a bit stupid
+        boolean hasProxyUri = options.hasProxyUri();
+        String proxyUri = null;
+        if (hasProxyUri) {
+            proxyUri = options.getProxyUri();
+            options.removeProxyUri();
+        }
+        boolean hasMaxAge = options.hasMaxAge();
+        if (hasMaxAge) {
+            options.removeMaxAge();
+        }
+        options.clear();
+        options.addOption(osOpt);
+        if (hasProxyUri) {
+            options.setProxyUri(proxyUri);
+        }
+        if (hasMaxAge) {
+            options.setMaxAge(0);
+        }
+        return options;
     }
 
     private static Option filterOSOption(OptionSet options){
@@ -133,6 +108,41 @@ public class ObjectSecurityLayer extends AbstractLayer {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    @Override
+    public void sendRequest(Exchange exchange, Request request){
+        prepareSend(request, request.getCode().value);
+        super.sendRequest(exchange, request);
+    }
+
+
+    @Override
+    public void sendResponse(Exchange exchange, Response response) {
+        prepareSend(response, response.getCode().value);
+        super.sendResponse(exchange,response);
+    }
+
+    @Override
+    public void sendEmptyMessage(Exchange exchange, EmptyMessage message) {
+        super.sendEmptyMessage(exchange,message);
+    }
+
+    @Override
+    public void receiveRequest(Exchange exchange, Request request) {
+       prepareReceive(request, request.getCode().value);
+       super.receiveRequest(exchange, request);
+    }
+
+    @Override
+    public void receiveResponse(Exchange exchange, Response response) {
+        prepareReceive(response, response.getCode().value);
+        super.receiveResponse(exchange,response);
+    }
+
+    @Override
+    public void receiveEmptyMessage(Exchange exchange, EmptyMessage message) {
+        super.receiveEmptyMessage(exchange, message);
     }
 
 
