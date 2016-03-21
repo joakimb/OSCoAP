@@ -1,5 +1,6 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
+import COSE.CoseException;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.serialization.DatagramReader;
@@ -34,9 +35,19 @@ public class ObjectSecurityLayer extends AbstractLayer {
             } else {
                 byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
                 byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(code, tid);
-
-                osOpt.encryptAndEncode(confidential, aad, tid);
-                message.setPayload(new byte[0]);
+                byte[] protectedPayload = null;
+                try {
+                    protectedPayload = osOpt.encryptAndEncode(confidential, aad, tid);
+                } catch (CoseException e) {
+                    e.printStackTrace();
+                }
+                if(message.getPayloadSize() > 0){
+                    osOpt.setValue(new byte[0]);
+                    message.setPayload(protectedPayload);
+                } else {
+                    osOpt.setValue(protectedPayload);
+                    message.setPayload(new byte[0]);
+                }
                 message.setOptions(juggleOptions(options, osOpt));
 
             }
@@ -51,7 +62,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
             ObjectSecurityOption op = new ObjectSecurityOption(o);
 
-            byte[] content = op.decryptAndDecode(op.getValue(), code);
+            byte[] protectedData = op.getLength() == 0 ? message.getPayload() : op.getValue();
+
+            byte[] content = op.decryptAndDecode(protectedData, code);
             List<Option> optionList = OSSerializer.readConfidentialOptions(content);
             for (Option option : optionList) {
                 message.getOptions().addOption(option);

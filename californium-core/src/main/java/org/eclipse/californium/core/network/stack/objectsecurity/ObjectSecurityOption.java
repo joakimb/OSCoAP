@@ -52,7 +52,7 @@ public class ObjectSecurityOption extends Option {
         this.value = option.getValue();
     }
 
-    public void encryptAndEncode(byte[] confidential, byte[] aad, OSTid tid){
+    public byte[] encryptAndEncode(byte[] confidential, byte[] aad, OSTid tid) throws CoseException {
         Encrypt0Message enc = new Encrypt0Message();
 
         enc.SetContent(confidential);
@@ -70,16 +70,13 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-        //add encypted msg to payload
-        try {
-            value = enc.EncodeToBytes();
-        } catch (CoseException e) {
-            e.printStackTrace();
-        }
+
+        return enc.EncodeToBytes();
     }
 
     public byte[] decryptAndDecode(byte[] payload, int code){
 
+        System.out.println("desr: " + bytesToHex(payload));
         Encrypt0Message enc = new Encrypt0Message();
         try {
             enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
@@ -115,6 +112,16 @@ public class ObjectSecurityOption extends Option {
 
     }
 
-
+    //TODO remove development method:
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
 }
 
