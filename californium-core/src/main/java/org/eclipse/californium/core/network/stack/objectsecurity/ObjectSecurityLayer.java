@@ -119,6 +119,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void sendResponse(Exchange exchange, Response response) {
+        if(exchange.getCurrentRequest().getOptions().hasOption(OptionNumberRegistry.OBJECT_SECURITY)){
+            response.getOptions().addOption(new ObjectSecurityOption());
+        }
         prepareSend(response, response.getCode().value);
         super.sendResponse(exchange,response);
     }
