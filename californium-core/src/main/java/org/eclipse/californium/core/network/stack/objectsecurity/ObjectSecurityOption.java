@@ -4,15 +4,10 @@ import COSE.*;
 import com.upokecenter.cbor.CBORObject;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.*;
-import org.eclipse.californium.core.coap.Message;
-import org.eclipse.californium.core.network.serialization.DatagramReader;
-import org.eclipse.californium.core.network.serialization.DatagramWriter;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 
-import java.util.List;
-
-import static org.eclipse.californium.core.coap.CoAP.MessageFormat.*;
-import static org.eclipse.californium.core.coap.CoAP.MessageFormat.CODE_BITS;
+import java.math.BigInteger;
+import java.util.Arrays;
 
 /**
  * Created by joakim on 2016-02-23.
@@ -70,11 +65,11 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-
+        tid.increaseSenderSeq();
         return enc.EncodeToBytes();
     }
 
-    public byte[] decryptAndDecode(byte[] payload, int code){
+    public byte[] decryptAndDecode(byte[] payload, int code) throws OSSequenceNumberException{
 
         System.out.println("desr: " + bytesToHex(payload));
         Encrypt0Message enc = new Encrypt0Message();
@@ -84,8 +79,11 @@ public class ObjectSecurityOption extends Option {
             e.printStackTrace();
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
+        byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
         OSTid tid = OSHashMapTIDDB.getDB().getTID(cid);
 
+        System.out.println("seq1: " + bytesToHex(seq));
+        System.out.println("seq2: " + bytesToHex(tid.getReceiverSeq()));
         byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(code, tid);
         enc.setExternal(aad);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
@@ -96,6 +94,10 @@ public class ObjectSecurityOption extends Option {
             System.exit(1);
             //TODO change behaviour to ignore OS or throw Exception earlier i chain,
         }
+        if(!Arrays.equals(seq,tid.getReceiverSeq())){ //TODO, handle messages arriving out of order
+            throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(tid.getReceiverSeq()).toString() + " got: " + new BigInteger(seq).toString());
+        }
+        System.out.println("receiving sequenceno: " + new BigInteger(seq).toString() + "/" + new BigInteger(tid.getReceiverSeq()));
         byte[] result = null;
 
         try {
@@ -107,7 +109,7 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-
+        tid.increaseReceiverSeq();
         return result;
 
     }

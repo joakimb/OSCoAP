@@ -4,12 +4,13 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSHashMapTIDDB;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTidDB;
+import org.eclipse.californium.core.coap.Message;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -22,16 +23,39 @@ import static org.junit.Assert.assertTrue;
  */
 public class ObjectSecurityTest {
 
+    ObjectSecurityLayer osLayer;
+    OSTidDB db;
     @Before
-    public void setupServer() {
+    public void setup() {
         System.out.println("\nStart "+getClass().getSimpleName());
+        osLayer = new ObjectSecurityLayer();
+        db = new OSHashMapTIDDB();
+        byte[] cidA = BigInteger.ONE.toByteArray();
+        byte[] cidB = (new BigInteger("2")).toByteArray();
+        OSTid tidA = new OSTid(BigInteger.ONE);
+        OSTid tidB = new OSTid(new BigInteger("2"));
+        db.addTid(cidA, tidA);
+        db.addTid(cidB, tidB);
     }
 
     @After
-    public void shutdownServer() {
+    public void tearDown() {
         System.out.println("End "+getClass().getSimpleName());
     }
 
+    @Test
+    public void testEncryptedNoOptionsNoPayload(){
+        /*
+        Request request = Request.newGet().setURI("coap://localhost:5683");
+        request.setType(CoAP.Type.CON);
+		request.getOptions().addOption(new ObjectSecurityOption());
+        osLayer.prepareSend(request, request.getCode().value);
+        System.out.println(request.getOptions().toString());
+        */
+    }
+
+
+    @Ignore
     @Test
     public void devTest(){
 
@@ -52,6 +76,7 @@ public class ObjectSecurityTest {
 
 
             String content = client.get().getResponseText();
+
             System.out.println("RESPONSE: " + content);
         //assertArrayEquals(content, new byte[4]);
             System.exit(0);

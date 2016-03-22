@@ -5,6 +5,7 @@ import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -20,7 +21,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         db = OSHashMapTIDDB.getDB();
     }
 
-    private void prepareSend(Message message, int code){
+    public void prepareSend(Message message, int code){
         OptionSet options = message.getOptions();
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
 
@@ -55,7 +56,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         }
     }
 
-    private void prepareReceive(Message message, int code){
+    public void prepareReceive(Message message, int code){
         OptionSet options = message.getOptions();
         Option o = filterOSOption(options);
         if ( o != null) {
@@ -64,7 +65,13 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
             byte[] protectedData = op.getLength() == 0 ? message.getPayload() : op.getValue();
 
-            byte[] content = op.decryptAndDecode(protectedData, code);
+            byte[] content = new byte[0];
+            try {
+                content = op.decryptAndDecode(protectedData, code);
+            } catch (OSSequenceNumberException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
             List<Option> optionList = OSSerializer.readConfidentialOptions(content);
             for (Option option : optionList) {
                 message.getOptions().addOption(option);

@@ -11,9 +11,10 @@ import java.math.BigInteger;
 public class OSTid {
 
 
+    //TODO, BigInteger encodes to 2-complement in .toByteArray(), should not be a problem, but test it
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
-    private byte[] senderSeq;    //1-8 bytes
-    private byte[] receiverSeq;    //1-8 bytes
+    private BigInteger senderSeq;    //1-8 bytes, contains the next unused value
+    private BigInteger receiverSeq;    //1-8 bytes, contains the next unused value
     private BigInteger senderSalt;
     private BigInteger receiverSalt;
     private int replayProtectionWin = 0;
@@ -22,8 +23,10 @@ public class OSTid {
 
     public OSTid(BigInteger cid){
         this.cid = cid;
-        this.senderSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-        this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+        //this.senderSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+        //this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+        this.senderSeq = BigInteger.ZERO;
+        this.receiverSeq = BigInteger.ZERO;
     }
 
     public byte[] getSenderKey(){
@@ -43,11 +46,41 @@ public class OSTid {
     }
 
     public byte[] getSenderSeq(){
-        return senderSeq;
+        byte[] array = senderSeq.toByteArray();
+        /*
+        //remove leading zeroes
+        int numLeadingZeroes = 0;
+        while (numLeadingZeroes < array.length && array[numLeadingZeroes] != 0){
+            numLeadingZeroes++;
+        }
+        byte[] newArr = new byte[array.length - numLeadingZeroes];
+        System.arraycopy(array, numLeadingZeroes, newArr, 0, newArr.length);
+
+        return newArr;
+        */ return array;
+    }
+
+    public void increaseSenderSeq(){
+        //senderSeq = senderSeq.add(BigInteger.ONE);
+    }
+
+    public void increaseReceiverSeq(){
+        //gitreceiverSeq = receiverSeq.add(BigInteger.ONE);
     }
 
     public byte[] getReceiverSeq(){
-        return receiverSeq;
+        byte[] array = receiverSeq.toByteArray();
+/*
+        //remove leading zeroes
+        int numLeadingZeroes = 0;
+        while (numLeadingZeroes < array.length && array[numLeadingZeroes] != 0){
+            numLeadingZeroes++;
+        }
+        byte[] newArr = new byte[array.length - numLeadingZeroes];
+        System.arraycopy(array, numLeadingZeroes, newArr, 0, newArr.length);
+
+        return newArr;
+        */return array;
     }
 
     public BigInteger getSenderSalt() {
