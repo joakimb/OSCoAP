@@ -102,12 +102,10 @@ public class ObjectSecurityTest {
         assertTrue(true);
     }
 
-
     @Ignore
     @Test
-    public void devTest(){
-
-        //from californium examples
+    public void devtest(){
+       //from californium examples
             CoapServer server = new CoapServer(5683);
             server.add(new CoapResource("hello"){
                 public void handleGET(CoapExchange exchange) {
@@ -127,7 +125,17 @@ public class ObjectSecurityTest {
 
             System.out.println("RESPONSE: " + content);
         //assertArrayEquals(content, new byte[4]);
-            System.exit(0);
+    }
+
+    @Ignore
+    @Test
+    public void tmpBorderRouterTest(){
+
+            CoapClient client = new CoapClient("coap://[aaaa::212:4b00:40f:b80]:5683/test/hello");
+
+            String content = client.get().getResponseText();
+
+            System.out.println("RESPONSE from chip: " + content);
     }
 
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
