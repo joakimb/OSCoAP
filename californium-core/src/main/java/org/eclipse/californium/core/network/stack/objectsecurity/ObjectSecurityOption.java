@@ -14,30 +14,6 @@ import java.util.Arrays;
  */
 public class ObjectSecurityOption extends Option {
 
-    /*
-    private Message message;
-    private int code;
-
-
-    public ObjectSecurityOption(Request message){
-
-        this(message,message.getCode() == null ? 0 : message.getCode().value);
-
-    }
-
-    public ObjectSecurityOption(Response message){
-
-        this(message,message.getCode() == null ? 0 : message.getCode().value);
-
-    }
-
-    private ObjectSecurityOption(Message message, int code){
-        number = OptionNumberRegistry.OBJECT_SECURITY;
-        this.message = message;
-        this.code = code;
-    }
-*/
-
     public ObjectSecurityOption(){
         number = OptionNumberRegistry.OBJECT_SECURITY;
     }

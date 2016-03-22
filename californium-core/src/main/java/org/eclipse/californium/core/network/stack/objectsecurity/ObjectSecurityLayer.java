@@ -79,7 +79,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             byte[] payload = OSSerializer.readPayload(content);
             message.setPayload(payload);
             System.out.println("PAYLOAD DECRYPTED: ");
-            System.out.println(bytesToHex(content));
+            System.out.println(bytesToHex(payload));
         }
 
     }
@@ -107,7 +107,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         return options;
     }
 
-    private static Option filterOSOption(OptionSet options){
+    public static Option filterOSOption(OptionSet options){
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
             for (Option o : options.asSortedList()) {
                 if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
