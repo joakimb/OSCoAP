@@ -27,7 +27,18 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
             //This cast is ok since we explicity initialize an OSOption when sending
             ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
-            OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
+
+            //TODO fix this, this is just for testing TIDS
+            OSTid tid;
+            if(message instanceof Request) {
+                tid = db.getTID(new BigInteger("2").toByteArray());
+                System.out.println("REQUEST");
+            }else {
+                tid = db.getTID(BigInteger.ONE.toByteArray());
+                System.out.println("RESPONSE");
+            }
+
+           //OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
 
             if (tid == null) {
                 System.out.print("TID NOT FOUND ABORTING");

@@ -30,7 +30,7 @@ public class ObjectSecurityOption extends Option {
         enc.setExternal(aad);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);//TODO vad skiljer fr[n setExternal()
         enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
-        enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
+        enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getClientSeq()),Attribute.ProtectedAttributes);
         try {
 
             byte[] key = tid.getSenderKey();
@@ -59,7 +59,7 @@ public class ObjectSecurityOption extends Option {
         OSTid tid = OSHashMapTIDDB.getDB().getTID(cid);
 
         System.out.println("seq1: " + bytesToHex(seq));
-        System.out.println("seq2: " + bytesToHex(tid.getReceiverSeq()));
+        System.out.println("seq2: " + bytesToHex(tid.getServerSeq()));
         byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(code, tid);
         enc.setExternal(aad);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
@@ -70,10 +70,10 @@ public class ObjectSecurityOption extends Option {
             System.exit(1);
             //TODO change behaviour to ignore OS or throw Exception earlier i chain,
         }
-        if(!Arrays.equals(seq,tid.getReceiverSeq())){ //TODO, handle messages arriving out of order
-            throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(tid.getReceiverSeq()).toString() + " got: " + new BigInteger(seq).toString());
+        if(!Arrays.equals(seq,tid.getServerSeq())){ //TODO, handle messages arriving out of order
+            throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(tid.getServerSeq()).toString() + " got: " + new BigInteger(seq).toString());
         }
-        System.out.println("receiving sequenceno: " + new BigInteger(seq).toString() + "/" + new BigInteger(tid.getReceiverSeq()));
+        System.out.println("receiving sequenceno: " + new BigInteger(seq).toString() + "/" + new BigInteger(tid.getServerSeq()));
         byte[] result = null;
 
         try {

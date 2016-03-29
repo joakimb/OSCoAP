@@ -49,7 +49,7 @@ public class OSSerializer {
     //
     private static void writeTid(DatagramWriter writer, OSTid tid){
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(tid.getSenderSeq());//TODO strip leading zeroes
+        writer.writeBytes(tid.getClientSeq());//TODO strip leading zeroes
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0
