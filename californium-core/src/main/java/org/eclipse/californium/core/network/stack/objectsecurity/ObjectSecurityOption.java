@@ -41,8 +41,18 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-        //TODO tid.increaseSenderSeq();
         return enc.EncodeToBytes();
+    }
+
+    public byte[] extcractCidFromProtected(byte[] protectedData){
+        Encrypt0Message enc = new Encrypt0Message();
+        try {
+            enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(protectedData));
+        } catch (CoseException e) {
+            e.printStackTrace();
+        }
+        byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
+        return cid;
     }
 
     public byte[] decryptAndDecode(byte[] payload, int code) throws OSSequenceNumberException{
@@ -56,7 +66,7 @@ public class ObjectSecurityOption extends Option {
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
         byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
-        OSTid tid = OSHashMapTIDDB.getDB().getTID(cid);
+        OSTid tid = OSHashMapTIDDB.getDB().getClientTID(cid);
 
         System.out.println("seq1: " + bytesToHex(seq));
         System.out.println("seq2: " + bytesToHex(tid.getReceiverSeq()));
@@ -86,7 +96,6 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-        // TODO tid.increaseReceiverSeq();
         return result;
 
     }

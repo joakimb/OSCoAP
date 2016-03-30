@@ -3,12 +3,10 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
 import COSE.CoseException;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
-import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
-import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -31,7 +29,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
 
 
-           //OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
+           //OSTid tid = db.getClientTID(BigInteger.ONE.toByteArray());
 
             if (tid == null) {
                 System.out.print("TID NOT PRESENT, ABORTING");
@@ -61,9 +59,12 @@ public class ObjectSecurityLayer extends AbstractLayer {
         }
     }
 
-    public void prepareReceive(Message message, int code){
+    public byte[] prepareReceive(Message message, int code){
         OptionSet options = message.getOptions();
         Option o = filterOSOption(options);
+
+        byte[] cid = null;
+
         if ( o != null) {
 
             ObjectSecurityOption op = new ObjectSecurityOption(o);
@@ -73,6 +74,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             byte[] content = new byte[0];
             try {
                 content = op.decryptAndDecode(protectedData, code);
+                cid = op.extcractCidFromProtected(protectedData);
             } catch (OSSequenceNumberException e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -86,7 +88,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             System.out.println("PAYLOAD DECRYPTED: ");
             System.out.println(bytesToHex(payload));
         }
-
+        return cid;
     }
 
     private OptionSet juggleOptions(OptionSet options, ObjectSecurityOption osOpt) {
@@ -139,7 +141,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void sendRequest(Exchange exchange, Request request){
         try {
             String uri = request.getURI();
-            OSTid tid = db.getTID(uri);
+            OSTid tid = db.getClientTID(uri);
             exchange.setCryptographicContextID(tid.getCid());
             prepareSend(request, tid, request.getCode().value);
         } catch (OSTIDException e) {
@@ -157,7 +159,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             response.getOptions().addOption(new ObjectSecurityOption());
         }
         try {
-            OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
+            OSTid tid = db.getClientTID(exchange.getCryptgraphicContextID());
             prepareSend(response, tid, response.getCode().value);
         } catch (OSTIDException e) {
             //TODO fail gracefully
@@ -174,7 +176,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveRequest(Exchange exchange, Request request) {
-       prepareReceive(request, request.getCode().value);
+       byte[] cid = prepareReceive(request, request.getCode().value);
+       exchange.setCryptographicContextID(cid);
        super.receiveRequest(exchange, request);
     }
 
