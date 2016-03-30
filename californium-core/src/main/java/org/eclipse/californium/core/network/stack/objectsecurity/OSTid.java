@@ -13,28 +13,28 @@ public class OSTid {
 
     //TODO, BigInteger encodes to 2-complement in .toByteArray(), should not be a problem, but test it
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
-    private BigInteger clientSeq;    //1-8 bytes, contains the last used value
-    private BigInteger serverSeq;    //1-8 bytes, contains the last used value
-    private BigInteger clientSalt;
-    private BigInteger serverSalt;
+    private BigInteger senderSeq;    //1-8 bytes, contains the last used value
+    private BigInteger receiverSeq;    //1-8 bytes, contains the last used value
+    private BigInteger senderSalt;
+    private BigInteger receiverSalt;
     private int replayProtectionWin = 0;
-    private byte[] clientKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-    private byte[] serverKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    private byte[] senderKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    private byte[] receiverKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
     public OSTid(BigInteger cid){
         this.cid = cid;
-        //this.clientSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-        //this.serverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-        this.clientSeq = BigInteger.ZERO;
-        this.serverSeq = BigInteger.ZERO;
+        //this.senderSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+        //this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+        this.senderSeq = BigInteger.ZERO;
+        this.receiverSeq = BigInteger.ZERO;
     }
 
     public byte[] getSenderKey(){
-        return clientKey;
+        return senderKey;
     }
 
     public byte[] getReceiverKey(){
-        return serverKey;
+        return receiverKey;
     }
 
     public CBORObject getAlg() {
@@ -45,8 +45,8 @@ public class OSTid {
         return cid.toByteArray();
     }
 
-    public byte[] getClientSeq(){
-        byte[] array = clientSeq.toByteArray();
+    public byte[] getSenderSeq(){
+        byte[] array = senderSeq.toByteArray();
         /*
         //remove leading zeroes
         int numLeadingZeroes = 0;
@@ -60,16 +60,16 @@ public class OSTid {
         */ return array;
     }
 
-    public void increaseClientSeq(){
-        clientSeq = clientSeq.add(BigInteger.ONE);
+    public void increaseSenderSeq(){
+        senderSeq = senderSeq.add(BigInteger.ONE);
     }
 
-    public void increasServerSeq(){
-        serverSeq = serverSeq.add(BigInteger.ONE);
+    public void increaseReceiverSeq(){
+        receiverSeq = receiverSeq.add(BigInteger.ONE);
     }
 
-    public byte[] getServerSeq(){
-        byte[] array = serverSeq.toByteArray();
+    public byte[] getReceiverSeq(){
+        byte[] array = receiverSeq.toByteArray();
 /*
         //remove leading zeroes
         int numLeadingZeroes = 0;
@@ -83,12 +83,12 @@ public class OSTid {
         */return array;
     }
 
-    public BigInteger getClientSalt() {
-        return clientSalt;
+    public BigInteger getSenderSalt() {
+        return senderSalt;
     }
 
-    public BigInteger getServerSalt() {
-        return serverSalt;
+    public BigInteger getReceiverSalt() {
+        return receiverSalt;
     }
 
     @Override

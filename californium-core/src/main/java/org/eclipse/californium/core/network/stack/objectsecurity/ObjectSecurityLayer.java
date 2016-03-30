@@ -39,12 +39,13 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
             } else {
                 byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
-                byte[] aad = OSSerializer.serializeAdditionalAuthenticatedData(code, tid);
+                byte[] aad = OSSerializer.serializeSenderAdditionalAuthenticatedData(code, tid);
                 byte[] protectedPayload = null;
                 try {
                     protectedPayload = osOpt.encryptAndEncode(confidential, aad, tid);
                 } catch (CoseException e) {
                     e.printStackTrace();
+                    System.exit(1);
                 }
                 if(message.getPayloadSize() > 0){
                     osOpt.setValue(new byte[0]);

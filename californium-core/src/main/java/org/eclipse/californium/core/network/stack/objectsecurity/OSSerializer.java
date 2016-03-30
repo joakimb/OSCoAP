@@ -28,13 +28,24 @@ public class OSSerializer {
     }
 
     //sending
-    public static byte[] serializeAdditionalAuthenticatedData(int code, OSTid tid){
+    public static byte[] serializeSenderAdditionalAuthenticatedData(int code, OSTid tid){
         //TODO include data from just under fig 6 in cose4
         DatagramWriter writer = new DatagramWriter();
         writeCoAPHeader(writer, code);
         writeAlgorithm(writer);
         writeIPOptions(writer);
-        writeTid(writer, tid);
+        writeSenderTid(writer, tid);
+        return writer.toByteArray();
+    }
+
+//sending
+    public static byte[] serializeReceiverAdditionalAuthenticatedData(int code, OSTid tid){
+        //TODO include data from just under fig 6 in cose4
+        DatagramWriter writer = new DatagramWriter();
+        writeCoAPHeader(writer, code);
+        writeAlgorithm(writer);
+        writeIPOptions(writer);
+        writeReceiverTid(writer, tid);
         return writer.toByteArray();
     }
 
@@ -47,9 +58,14 @@ public class OSSerializer {
     }
 
     //
-    private static void writeTid(DatagramWriter writer, OSTid tid){
+    private static void writeSenderTid(DatagramWriter writer, OSTid tid){
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(tid.getClientSeq());//TODO strip leading zeroes
+        writer.writeBytes(tid.getSenderSeq());//TODO strip leading zeroes
+    }
+
+    private static void writeReceiverTid(DatagramWriter writer, OSTid tid){
+        writer.writeBytes(tid.getCid());
+        writer.writeBytes(tid.getReceiverSeq());//TODO strip leading zeroes
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0

@@ -5,7 +5,6 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
@@ -140,7 +139,7 @@ public class ObjectSecurityTest {
             clientSeq++;
         }
         //messy line that compares expected clientSeq byte array to expected byte array seq
-        assertArrayEquals("clentSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID(new BigInteger("2").toByteArray()).getClientSeq());
+        assertArrayEquals("clentSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID(new BigInteger("2").toByteArray()).getSenderSeq());
     }
 
     @Ignore
