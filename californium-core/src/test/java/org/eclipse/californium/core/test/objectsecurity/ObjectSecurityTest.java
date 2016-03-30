@@ -120,7 +120,7 @@ public class ObjectSecurityTest {
     }
 
     @Test
-    public void testSequenceNumbers(){
+    public void testSequenceNumbersIncreasing(){
         List<Request> requests = new ArrayList<>();
         for (int i  = 0; i < 100; i++){
             Request request = Request.newPost().setURI("coap://localhost:5683");
@@ -130,16 +130,41 @@ public class ObjectSecurityTest {
         }
         int clientSeq = 0;
         for (Request request : requests) {
+            try {
+                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
+            } catch (OSTIDException e) {
+                e.printStackTrace();
+                assertTrue(false);
+            }
+            osLayer.prepareReceive(request, request.getCode().value);
+            clientSeq++;
+        }
+
+        try{
+            assertArrayEquals("senderSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID("coap://localhost:5683").getSenderSeq());
+            assertArrayEquals("receiverSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID("coap://localhost:5683").getSenderSeq());
+        } catch (Exception e){
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testSequenceNumbersReplayReject(){
+        Request request = Request.newPost().setURI("coap://localhost:5683");
+        request.setType(CoAP.Type.CON);
+        request.getOptions().addOption(new ObjectSecurityOption());
         try {
+            //sending seq 1
             osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
-            clientSeq++;
-        }
-        //messy line that compares expected clientSeq byte array to expected byte array seq
-        assertArrayEquals("clentSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID(new BigInteger("2").toByteArray()).getSenderSeq());
+        //receiving seq 1
+        osLayer.prepareReceive(request, request.getCode().value);
+
+
     }
 
     @Ignore
