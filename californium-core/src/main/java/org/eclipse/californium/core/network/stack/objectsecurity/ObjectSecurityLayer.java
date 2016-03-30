@@ -6,6 +6,7 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -21,27 +22,19 @@ public class ObjectSecurityLayer extends AbstractLayer {
         db = OSHashMapTIDDB.getDB();
     }
 
-    public void prepareSend(Message message, int code){
+    public void prepareSend(Message message, OSTid tid, int code) throws OSTIDException{
         OptionSet options = message.getOptions();
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
 
             //This cast is ok since we explicity initialize an OSOption when sending
             ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
 
-            //TODO fix this, this is just for testing TIDS
-            OSTid tid;
-            if(message instanceof Request) {
-                tid = db.getTID(new BigInteger("2").toByteArray());
-                System.out.println("REQUEST");
-            }else {
-                tid = db.getTID(BigInteger.ONE.toByteArray());
-                System.out.println("RESPONSE");
-            }
+
 
            //OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
 
             if (tid == null) {
-                System.out.print("TID NOT FOUND ABORTING");
+                System.out.print("TID NOT PRESENT, ABORTING");
                 System.exit(1);
                 //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
             } else {
@@ -143,7 +136,16 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void sendRequest(Exchange exchange, Request request){
-        prepareSend(request, request.getCode().value);
+        try {
+            String uri = request.getURI();
+            OSTid tid = db.getTID(uri);
+            exchange.setCryptographicContextID(tid.getCid());
+            prepareSend(request, tid, request.getCode().value);
+        } catch (OSTIDException e) {
+            //TODO fail gracefully
+            e.printStackTrace();
+            System.exit(1);
+        }
         super.sendRequest(exchange, request);
     }
 
@@ -153,7 +155,14 @@ public class ObjectSecurityLayer extends AbstractLayer {
         if(exchange.getCurrentRequest().getOptions().hasOption(OptionNumberRegistry.OBJECT_SECURITY)){
             response.getOptions().addOption(new ObjectSecurityOption());
         }
-        prepareSend(response, response.getCode().value);
+        try {
+            OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
+            prepareSend(response, tid, response.getCode().value);
+        } catch (OSTIDException e) {
+            //TODO fail gracefully
+            e.printStackTrace();
+            System.exit(1);
+        }
         super.sendResponse(exchange,response);
     }
 

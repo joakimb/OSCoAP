@@ -41,7 +41,7 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-        tid.increaseSenderSeq();
+        //TODO tid.increaseSenderSeq();
         return enc.EncodeToBytes();
     }
 
@@ -85,7 +85,7 @@ public class ObjectSecurityOption extends Option {
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
         }
-        tid.increaseReceiverSeq();
+        // TODO tid.increaseReceiverSeq();
         return result;
 
     }

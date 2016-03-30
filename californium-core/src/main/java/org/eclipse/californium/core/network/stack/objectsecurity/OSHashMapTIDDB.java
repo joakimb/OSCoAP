@@ -1,5 +1,9 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.util.HashMap;
@@ -10,7 +14,8 @@ import java.util.HashMap;
 public class OSHashMapTIDDB implements OSTidDB {
 
     static OSHashMapTIDDB db;
-    HashMap<Cid, OSTid> map;
+    HashMap<Cid, OSTid> cidMap;
+    HashMap<String, OSTid> uriMap;
 
     public static OSHashMapTIDDB getDB(){
         if(db == null) db = new OSHashMapTIDDB();
@@ -18,17 +23,34 @@ public class OSHashMapTIDDB implements OSTidDB {
     }
 
     public OSHashMapTIDDB(){
-        map = new HashMap<Cid, OSTid>();
+        uriMap = new HashMap<String, OSTid>();
+        cidMap = new HashMap<Cid, OSTid>();
     }
 
     @Override
     public OSTid getTID(byte[] cid) {
-        return map.get(new Cid(cid));
+        return cidMap.get(new Cid(cid));
+    }
+    @Override
+    public OSTid getTID(String uri) throws OSTIDException {
+        uri = normalizeServerUri(uri);
+        return uriMap.get(uri);
+    }
+
+    private String normalizeServerUri(String uri) throws OSTIDException{
+        String normalized = null;
+        try{
+            normalized = (new URI(uri)).getHost();
+        } catch (URISyntaxException e){
+            throw new OSTIDException("can not find tid for uri");
+        }
+        return normalized;
     }
 
     @Override
-    public void addTid(byte[] cid, OSTid tidObj) {
-        map.put(new Cid(cid),tidObj);
+    public void addTid(byte[] cid,String uri, OSTid tidObj) throws OSTIDException {
+        uriMap.put(normalizeServerUri(uri), tidObj);
+        cidMap.put(new Cid(cid),tidObj);
     }
 
     private class Cid {

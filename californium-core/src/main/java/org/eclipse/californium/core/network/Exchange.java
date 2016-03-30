@@ -142,6 +142,9 @@ public class Exchange {
 	// The endpoint will hand sending responses over to the protocol stage executor
 	private boolean customExecutor = false;
 
+	//If object security option is used, the Cryptographic context identifier is stored here
+	// for request/response mapping of contexts
+	private byte[] cryptoContextId;
 	/**
 	 * Constructs a new exchange with the specified request and origin. 
 	 * @param request the request that starts the exchange
@@ -491,6 +494,22 @@ public class Exchange {
 	 */
 	public void setCustomExecutor() {
 		this.customExecutor = true;
+	}
+
+	/**
+	 * Sets cryptoContextId
+	 * @param cryptoContextId a byte array used for mapping cryptographic contexts
+     */
+	public void setCryptographicContextID(byte[] cryptoContextId){
+		this.cryptoContextId = cryptoContextId;
+	}
+
+	/**
+	 * Gets cryptoContextId
+	 * @return
+     */
+	public byte[] getCryptgraphicContextID(){
+		return this.cryptoContextId;
 	}
 
 	/**

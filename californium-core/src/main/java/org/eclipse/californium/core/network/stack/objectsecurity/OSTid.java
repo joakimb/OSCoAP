@@ -13,8 +13,8 @@ public class OSTid {
 
     //TODO, BigInteger encodes to 2-complement in .toByteArray(), should not be a problem, but test it
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
-    private BigInteger clientSeq;    //1-8 bytes, contains the next unused value
-    private BigInteger serverSeq;    //1-8 bytes, contains the next unused value
+    private BigInteger clientSeq;    //1-8 bytes, contains the last used value
+    private BigInteger serverSeq;    //1-8 bytes, contains the last used value
     private BigInteger clientSalt;
     private BigInteger serverSalt;
     private int replayProtectionWin = 0;
@@ -60,12 +60,12 @@ public class OSTid {
         */ return array;
     }
 
-    public void increaseSenderSeq(){
-        //clientSeq = clientSeq.add(BigInteger.ONE);
+    public void increaseClientSeq(){
+        clientSeq = clientSeq.add(BigInteger.ONE);
     }
 
-    public void increaseReceiverSeq(){
-        //gitreceiverSeq = serverSeq.add(BigInteger.ONE);
+    public void increasServerSeq(){
+        serverSeq = serverSeq.add(BigInteger.ONE);
     }
 
     public byte[] getServerSeq(){
