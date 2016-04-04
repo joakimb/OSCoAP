@@ -38,8 +38,8 @@ public class ObjectSecurityTest {
         OSTid tidA = new OSTid(BigInteger.ONE);
         OSTid tidB = new OSTid(new BigInteger("2"));
         try {
-            db.addClientTid(cidA, "coap://localhost/", tidA);
-            //db.addClientTid(cidB, "coap://localhost/", tidB);
+            db.addTid(cidA, "coap://localhost/", tidA);
+            //db.addTid(cidB, "coap://localhost/", tidB);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);
@@ -60,7 +60,7 @@ public class ObjectSecurityTest {
         request.setType(CoAP.Type.CON);
 		request.getOptions().addOption(new ObjectSecurityOption());
         try {
-                osLayer.prepareSend(request, db.getClientTID("coap://localhost:5683"), request.getCode().value);
+                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -86,7 +86,7 @@ public class ObjectSecurityTest {
 		request.getOptions().addOption(new ObjectSecurityOption());
         assertEquals(2,request.getOptions().getLocationPathCount());
         try {
-            osLayer.prepareSend(request, db.getClientTID("coap://localhost:5683"), request.getCode().value);
+            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -104,7 +104,7 @@ public class ObjectSecurityTest {
         request.setPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
         try {
-            osLayer.prepareSend(request, db.getClientTID("coap://localhost:5683"), request.getCode().value);
+            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -131,7 +131,7 @@ public class ObjectSecurityTest {
         int clientSeq = 0;
         for (Request request : requests) {
             try {
-                osLayer.prepareSend(request, db.getClientTID("coap://localhost:5683"), request.getCode().value);
+                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
             } catch (OSTIDException e) {
                 e.printStackTrace();
                 assertTrue(false);
@@ -141,8 +141,8 @@ public class ObjectSecurityTest {
         }
 
         try{
-            assertArrayEquals("senderSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getClientTID("coap://localhost:5683").getSenderSeq());
-            assertArrayEquals("receiverSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getClientTID("coap://localhost:5683").getSenderSeq());
+            assertArrayEquals("senderSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID("coap://localhost:5683").getSenderSeq());
+            assertArrayEquals("receiverSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getTID("coap://localhost:5683").getSenderSeq());
         } catch (Exception e){
             e.printStackTrace();
             assertTrue(false);
@@ -156,7 +156,7 @@ public class ObjectSecurityTest {
         request.getOptions().addOption(new ObjectSecurityOption());
         try {
             //sending seq 1
-            osLayer.prepareSend(request, db.getClientTID("coap://localhost:5683"), request.getCode().value);
+            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -184,7 +184,7 @@ public class ObjectSecurityTest {
         OSTid tid = new OSTid(BigInteger.ONE);
         OSTidDB db = OSHashMapTIDDB.getDB();
         try {
-            db.addClientTid(tid.getCid(), uri, tid);
+            db.addTid(tid.getCid(), uri, tid);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);

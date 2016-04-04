@@ -29,7 +29,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
 
 
-           //OSTid tid = db.getClientTID(BigInteger.ONE.toByteArray());
+           //OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
 
             if (tid == null) {
                 System.out.print("TID NOT PRESENT, ABORTING");
@@ -141,7 +141,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void sendRequest(Exchange exchange, Request request){
         try {
             String uri = request.getURI();
-            OSTid tid = db.getClientTID(uri);
+            OSTid tid = db.getTID(uri);
             exchange.setCryptographicContextID(tid.getCid());
             prepareSend(request, tid, request.getCode().value);
         } catch (OSTIDException e) {
@@ -159,7 +159,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             response.getOptions().addOption(new ObjectSecurityOption());
         }
         try {
-            OSTid tid = db.getClientTID(exchange.getCryptgraphicContextID());
+            OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
             prepareSend(response, tid, response.getCode().value);
         } catch (OSTIDException e) {
             //TODO fail gracefully

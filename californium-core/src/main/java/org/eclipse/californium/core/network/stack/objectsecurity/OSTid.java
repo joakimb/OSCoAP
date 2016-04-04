@@ -14,7 +14,7 @@ public class OSTid {
     //TODO, BigInteger encodes to 2-complement in .toByteArray(), should not be a problem, but test it
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
     private BigInteger senderSeq;    //1-8 bytes, contains the last used value
-    private BigInteger receiverSeq;    //1-8 bytes, contains the last used value
+    private BigInteger receiverSeq;    //1-8 bytes, contains the last used value (max 56 bits?)
     private BigInteger senderSalt;
     private BigInteger receiverSalt;
     private int replayProtectionWin = 0;

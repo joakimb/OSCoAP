@@ -66,7 +66,7 @@ public class ObjectSecurityOption extends Option {
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
         byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
-        OSTid tid = OSHashMapTIDDB.getDB().getClientTID(cid);
+        OSTid tid = OSHashMapTIDDB.getDB().getTID(cid);
 
         System.out.println("seq1: " + bytesToHex(seq));
         System.out.println("seq2: " + bytesToHex(tid.getReceiverSeq()));

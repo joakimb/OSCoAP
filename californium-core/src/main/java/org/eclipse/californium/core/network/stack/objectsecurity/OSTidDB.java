@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
  */
 public interface OSTidDB {
 
-    OSTid getClientTID(byte[] cid);
-    OSTid getClientTID(String uri)  throws OSTIDException;
-    void addClientTid(byte[] cid, String uri, OSTid tidObj) throws OSTIDException;
+    OSTid getTID(byte[] cid);
+    OSTid getTID(String uri)  throws OSTIDException;
+    void addTid(byte[] cid, String uri, OSTid tidObj) throws OSTIDException;
 }

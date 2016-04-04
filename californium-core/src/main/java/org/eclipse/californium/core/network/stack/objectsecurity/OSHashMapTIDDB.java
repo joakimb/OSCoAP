@@ -28,11 +28,11 @@ public class OSHashMapTIDDB implements OSTidDB {
     }
 
     @Override
-    public OSTid getClientTID(byte[] cid) {
+    public OSTid getTID(byte[] cid) {
         return cidMap.get(new Cid(cid));
     }
     @Override
-    public OSTid getClientTID(String uri) throws OSTIDException {
+    public OSTid getTID(String uri) throws OSTIDException {
         uri = normalizeServerUri(uri);
         return uriMap.get(uri);
     }
@@ -48,7 +48,7 @@ public class OSHashMapTIDDB implements OSTidDB {
     }
 
     @Override
-    public void addClientTid(byte[] cid, String uri, OSTid tidObj) throws OSTIDException {
+    public void addTid(byte[] cid, String uri, OSTid tidObj) throws OSTIDException {
         uriMap.put(normalizeServerUri(uri), tidObj);
         cidMap.put(new Cid(cid),tidObj);
     }
