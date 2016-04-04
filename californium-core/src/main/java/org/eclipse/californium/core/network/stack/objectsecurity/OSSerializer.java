@@ -60,12 +60,25 @@ public class OSSerializer {
     //
     private static void writeSenderTid(DatagramWriter writer, OSTid tid){
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(tid.getSenderSeq());//TODO strip leading zeroes
+        writer.writeBytes(stripZeroes(tid.getSenderSeq()));
     }
 
     private static void writeReceiverTid(DatagramWriter writer, OSTid tid){
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(tid.getReceiverSeq());//TODO strip leading zeroes
+        writer.writeBytes(stripZeroes(tid.getReceiverSeq()));
+    }
+
+    private static byte[] stripZeroes(byte[] in){
+        if(in.length == 1) return in;
+        int firstValue = 0;
+        while(firstValue < in.length && in[firstValue] == 0){
+            firstValue++;
+        }
+        byte[] out = new byte[in.length - firstValue];
+        for(int i = 0; i < in.length; i++){
+            out[i] = in[firstValue + i];
+        }
+        return out;
     }
 
     //first 2 bytes of header with Type and Token Length bits set to 0
