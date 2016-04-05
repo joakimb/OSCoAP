@@ -66,7 +66,7 @@ public class ObjectSecurityTest {
             assertTrue(false);
         }
         System.out.println(request.getOptions().toString());
-        CBORObject cbor = CBORObject.FromObject(osLayer.filterOSOption(request.getOptions()));
+        CBORObject cbor = CBORObject.FromObject(OptionJuggle.filterOSOption(request.getOptions()));
         System.out.println(cbor.toString());
         System.out.println(cbor.getKeys());
         assertTrue(cbor.get("noCacheKey").isFalse());

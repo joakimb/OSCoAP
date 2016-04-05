@@ -24,7 +24,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         OptionSet options = message.getOptions();
         byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(message.getCode().value, tid, message.getURI());
         //This cast is ok since we explicity initialize an OSOption when sending
-        ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
+        ObjectSecurityOption osOpt = OptionJuggle.filterOSOption(options);
 
         if (tid == null) {
             System.out.print("TID NOT PRESENT, ABORTING");
@@ -46,7 +46,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 osOpt.setValue(protectedPayload);
                 message.setPayload(new byte[0]);
             }
-            message.setOptions(juggleOptions(options, osOpt));
+            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options));
 
         }
 
@@ -57,7 +57,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         OptionSet options = message.getOptions();
         byte[] aad = OSSerializer.serializeSendResponseAdditionalAuthenticatedData(message.getCode().value, tid);
         //This cast is ok since we explicity initialize an OSOption when sending
-        ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
+        ObjectSecurityOption osOpt = OptionJuggle.filterOSOption(options);
 
         if (tid == null) {
             System.out.print("TID NOT PRESENT, ABORTING");
@@ -79,7 +79,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 osOpt.setValue(protectedPayload);
                 message.setPayload(new byte[0]);
             }
-            message.setOptions(juggleOptions(options, osOpt));
+            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options));
 
         }
 
@@ -91,7 +91,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         //h'mta cid fr[n kid i enc0msg                 cid = op.extcractCidFromProtected(protectedData);
 
         OptionSet options = req.getOptions();
-        Option o = filterOSOption(options);
+        Option o = OptionJuggle.filterOSOption(options);
 
         //byte[] cid = null;
 
@@ -128,7 +128,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public byte[] prepareReceive(Response response, OSTid tid) throws OSTIDException {
 
         OptionSet options = response.getOptions();
-        Option o = filterOSOption(options);
+        Option o = OptionJuggle.filterOSOption(options);
 
         //byte[] cid = null;
 
@@ -160,39 +160,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     }
 
 
-    private OptionSet juggleOptions(OptionSet options, ObjectSecurityOption osOpt) {
-        //TODO, this is a bit stupid
-        boolean hasProxyUri = options.hasProxyUri();
-        String proxyUri = null;
-        if (hasProxyUri) {
-            proxyUri = options.getProxyUri();
-            options.removeProxyUri();
-        }
-        boolean hasMaxAge = options.hasMaxAge();
-        if (hasMaxAge) {
-            options.removeMaxAge();
-        }
-        options.clear();
-        options.addOption(osOpt);
-        if (hasProxyUri) {
-            options.setProxyUri(proxyUri);
-        }
-        if (hasMaxAge) {
-            options.setMaxAge(0);
-        }
-        return options;
-    }
 
-    public static Option filterOSOption(OptionSet options){
-        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
-            for (Option o : options.asSortedList()) {
-                if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
-                    return o;
-                }
-            }
-        }
-        return null;
-    }
 
     //TODO remove development method:
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
