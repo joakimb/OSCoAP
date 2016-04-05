@@ -176,10 +176,12 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void sendRequest(Exchange exchange, Request request){
+
         if(shouldProtectRequest(request)){
            try {
                 String uri = request.getURI();
                 OSTid tid = db.getTID(uri);
+                //make sure we can find Security Context for associated Response
                 exchange.setCryptographicContextID(tid.getCid());
                 prepareSend(request, tid);
             } catch (OSTIDException e) {
