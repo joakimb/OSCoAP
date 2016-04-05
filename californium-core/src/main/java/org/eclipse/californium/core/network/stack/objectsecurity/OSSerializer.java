@@ -6,6 +6,7 @@ import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,46 +28,45 @@ public class OSSerializer {
         return writer.toByteArray();
     }
 
-    //sending
-    public static byte[] serializeSenderAdditionalAuthenticatedData(int code, OSTid tid){
-        //TODO include data from just under fig 6 in cose4
+    public static byte[] serializeSendResponseAdditionalAuthenticatedData(int code, OSTid tid){
         DatagramWriter writer = new DatagramWriter();
         writeCoAPHeader(writer, code);
-        writeAlgorithm(writer);
-        writeIPOptions(writer);
-        writeSenderTid(writer, tid);
-        return writer.toByteArray();
-    }
-
-//sending
-    public static byte[] serializeReceiverAdditionalAuthenticatedData(int code, OSTid tid){
-        //TODO include data from just under fig 6 in cose4
-        DatagramWriter writer = new DatagramWriter();
-        writeCoAPHeader(writer, code);
-        writeAlgorithm(writer);
-        writeIPOptions(writer);
-        writeReceiverTid(writer, tid);
-        return writer.toByteArray();
-    }
-
-    private static void writeIPOptions(DatagramWriter writer){
-        //TODO
-    }
-
-    private static void writeAlgorithm(DatagramWriter writer){
-        //TODO
-    }
-
-    //
-    private static void writeSenderTid(DatagramWriter writer, OSTid tid){
+        writeAlgorithm(writer, tid);
         writer.writeBytes(tid.getCid());
         writer.writeBytes(stripZeroes(tid.getSenderSeq()));
+        return writer.toByteArray();
     }
 
-    private static void writeReceiverTid(DatagramWriter writer, OSTid tid){
+    public static byte[] serializeReceiveResponseAdditionalAuthenticatedData(int code, OSTid tid, byte[] seq){
+        DatagramWriter writer = new DatagramWriter();
+        writeCoAPHeader(writer, code);
+        writeAlgorithm(writer, tid);
         writer.writeBytes(tid.getCid());
-        writer.writeBytes(stripZeroes(tid.getReceiverSeq()));
+        writer.writeBytes(stripZeroes(seq));
+        return writer.toByteArray();
     }
+
+
+    public static byte[] serializeRequestAdditionalAuthenticatedData(int code, OSTid tid, String uri){
+        DatagramWriter writer = new DatagramWriter();
+        writeCoAPHeader(writer, code);
+        writeAlgorithm(writer, tid);
+        writeUri(writer, uri);
+        return writer.toByteArray();
+    }
+
+    private static void writeUri(DatagramWriter writer, String uri){
+       //TODO
+    }
+
+    private static void writeAlgorithm(DatagramWriter writer, OSTid tid){
+        writer.write(tid.getAlg().AsCBOR().AsInt32(), 32);
+    }
+
+//    private static void writeReceiverTid(DatagramWriter writer, OSTid tid){
+//        writer.writeBytes(tid.getCid());
+//        writer.writeBytes(stripZeroes(tid.getReceiverSeq()));
+//    }
 
     private static byte[] stripZeroes(byte[] in){
         if(in.length == 1) return in;

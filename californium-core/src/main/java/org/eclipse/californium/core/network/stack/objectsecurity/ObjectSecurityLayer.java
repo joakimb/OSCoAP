@@ -20,76 +20,145 @@ public class ObjectSecurityLayer extends AbstractLayer {
         db = OSHashMapTIDDB.getDB();
     }
 
-    public void prepareSend(Message message, OSTid tid, int code) throws OSTIDException{
+    public void prepareSend(Request message, OSTid tid) throws OSTIDException {
         OptionSet options = message.getOptions();
-        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+        byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(message.getCode().value, tid, message.getURI());
+        //This cast is ok since we explicity initialize an OSOption when sending
+        ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
 
-            //This cast is ok since we explicity initialize an OSOption when sending
-            ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
-
-
-
-           //OSTid tid = db.getTID(BigInteger.ONE.toByteArray());
-
-            if (tid == null) {
-                System.out.print("TID NOT PRESENT, ABORTING");
+        if (tid == null) {
+            System.out.print("TID NOT PRESENT, ABORTING");
+            System.exit(1);
+            //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
+        } else {
+            byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
+            byte[] protectedPayload = null;
+            try {
+                protectedPayload = osOpt.encryptAndEncodeRequest(confidential,aad,tid);
+            } catch (CoseException e) {
+                e.printStackTrace();
                 System.exit(1);
-                //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
-            } else {
-                byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
-                byte[] aad = OSSerializer.serializeSenderAdditionalAuthenticatedData(code, tid);
-                byte[] protectedPayload = null;
-                try {
-                    protectedPayload = osOpt.encryptAndEncode(confidential, aad, tid);
-                } catch (CoseException e) {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-                if(message.getPayloadSize() > 0){
-                    osOpt.setValue(new byte[0]);
-                    message.setPayload(protectedPayload);
-                } else {
-                    osOpt.setValue(protectedPayload);
-                    message.setPayload(new byte[0]);
-                }
-                message.setOptions(juggleOptions(options, osOpt));
-
             }
+            if (message.getPayloadSize() > 0) {
+                osOpt.setValue(new byte[0]);
+                message.setPayload(protectedPayload);
+            } else {
+                osOpt.setValue(protectedPayload);
+                message.setPayload(new byte[0]);
+            }
+            message.setOptions(juggleOptions(options, osOpt));
 
         }
+
+
     }
 
-    public byte[] prepareReceive(Message message, int code){
+    public void prepareSend(Response message, OSTid tid) throws OSTIDException {
         OptionSet options = message.getOptions();
+        byte[] aad = OSSerializer.serializeSendResponseAdditionalAuthenticatedData(message.getCode().value, tid);
+        //This cast is ok since we explicity initialize an OSOption when sending
+        ObjectSecurityOption osOpt = (ObjectSecurityOption) filterOSOption(options);
+
+        if (tid == null) {
+            System.out.print("TID NOT PRESENT, ABORTING");
+            System.exit(1);
+            //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
+        } else {
+            byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
+            byte[] protectedPayload = null;
+            try {
+                protectedPayload = osOpt.encryptAndEncodeResponse(confidential, aad, tid);
+            } catch (CoseException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            if (message.getPayloadSize() > 0) {
+                osOpt.setValue(new byte[0]);
+                message.setPayload(protectedPayload);
+            } else {
+                osOpt.setValue(protectedPayload);
+                message.setPayload(new byte[0]);
+            }
+            message.setOptions(juggleOptions(options, osOpt));
+
+        }
+
+
+    }
+
+    public byte[] prepareReceive(Request req) throws OSTIDException {
+        //todo
+        //h'mta cid fr[n kid i enc0msg                 cid = op.extcractCidFromProtected(protectedData);
+
+        OptionSet options = req.getOptions();
         Option o = filterOSOption(options);
 
-        byte[] cid = null;
+        //byte[] cid = null;
 
         if ( o != null) {
 
             ObjectSecurityOption op = new ObjectSecurityOption(o);
 
-            byte[] protectedData = op.getLength() == 0 ? message.getPayload() : op.getValue();
+            byte[] protectedData = op.getLength() == 0 ? req.getPayload() : op.getValue();
+            //TODO check seq validity
+            byte[] cid = ObjectSecurityOption.extractCidFromProtected(protectedData);
+            OSTid tid = db.getTID(cid);
 
+            //byte[] seq = ObjectSecurityOption.extractSeqFromProtected(protectedData);
+
+            byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(req.getCode().value, tid, req.getURI());
             byte[] content = new byte[0];
             try {
-                content = op.decryptAndDecode(protectedData, code);
-                cid = op.extcractCidFromProtected(protectedData);
+                content = op.decryptAndDecodeRequest(protectedData, aad);
+
             } catch (OSSequenceNumberException e) {
                 e.printStackTrace();
                 System.exit(1);
             }
             List<Option> optionList = OSSerializer.readConfidentialOptions(content);
             for (Option option : optionList) {
-                message.getOptions().addOption(option);
+                req.getOptions().addOption(option);
             }
             byte[] payload = OSSerializer.readPayload(content);
-            message.setPayload(payload);
-            System.out.println("PAYLOAD DECRYPTED: ");
-            System.out.println(bytesToHex(payload));
+            req.setPayload(payload);
+            return cid;
         }
-        return cid;
+        return null;
     }
+    public byte[] prepareReceive(Response response, OSTid tid) throws OSTIDException {
+
+        OptionSet options = response.getOptions();
+        Option o = filterOSOption(options);
+
+        //byte[] cid = null;
+
+        if ( o != null) {
+
+            ObjectSecurityOption op = new ObjectSecurityOption(o);
+
+            byte[] protectedData = op.getLength() == 0 ? response.getPayload() : op.getValue();
+
+            byte[] seq = ObjectSecurityOption.extractSeqFromProtected(protectedData);
+            byte[] aad = OSSerializer.serializeReceiveResponseAdditionalAuthenticatedData(response.getCode().value, tid, seq);
+            byte[] content = new byte[0];
+            try {
+                content = op.decryptAndDecodeResponse(protectedData, aad, tid);
+
+            } catch (OSSequenceNumberException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            List<Option> optionList = OSSerializer.readConfidentialOptions(content);
+            for (Option option : optionList) {
+                response.getOptions().addOption(option);
+            }
+            byte[] payload = OSSerializer.readPayload(content);
+            response.setPayload(payload);
+            return tid.getCid();
+        }
+        return null;
+    }
+
 
     private OptionSet juggleOptions(OptionSet options, ObjectSecurityOption osOpt) {
         //TODO, this is a bit stupid
@@ -139,15 +208,18 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void sendRequest(Exchange exchange, Request request){
-        try {
-            String uri = request.getURI();
-            OSTid tid = db.getTID(uri);
-            exchange.setCryptographicContextID(tid.getCid());
-            prepareSend(request, tid, request.getCode().value);
-        } catch (OSTIDException e) {
-            //TODO fail gracefully
-            e.printStackTrace();
-            System.exit(1);
+        OptionSet options = request.getOptions();
+        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
+            try {
+                String uri = request.getURI();
+                OSTid tid = db.getTID(uri);
+                exchange.setCryptographicContextID(tid.getCid());
+                prepareSend(request, tid);
+            } catch (OSTIDException e) {
+                //TODO fail gracefully
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
         super.sendRequest(exchange, request);
     }
@@ -160,7 +232,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         }
         try {
             OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
-            prepareSend(response, tid, response.getCode().value);
+            prepareSend(response, tid);
         } catch (OSTIDException e) {
             //TODO fail gracefully
             e.printStackTrace();
@@ -176,14 +248,30 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveRequest(Exchange exchange, Request request) {
-       byte[] cid = prepareReceive(request, request.getCode().value);
+        //TODO break if no OSOpt
+        byte[] cid = null;
+        try {
+            cid = prepareReceive(request);
+        } catch (OSTIDException e) {
+            //TODO fail gracefully
+            e.printStackTrace();
+            System.exit(1);
+        }
        exchange.setCryptographicContextID(cid);
        super.receiveRequest(exchange, request);
     }
 
     @Override
     public void receiveResponse(Exchange exchange, Response response) {
-        prepareReceive(response, response.getCode().value);
+        //TODO break if no OSOpt
+        try {
+            OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
+            prepareReceive(response, tid);
+        } catch (OSTIDException e) {
+            //TODO fail gracefully
+            e.printStackTrace();
+            System.exit(1);
+        }
         super.receiveResponse(exchange,response);
     }
 

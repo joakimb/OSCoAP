@@ -37,8 +37,8 @@ public class OSTid {
         return receiverKey;
     }
 
-    public CBORObject getAlg() {
-        return AlgorithmID.AES_CCM_16_64_128.AsCBOR();
+    public AlgorithmID getAlg() {
+        return AlgorithmID.AES_CCM_16_64_128;
     }
     
     public byte[] getCid(){

@@ -23,14 +23,24 @@ public class ObjectSecurityOption extends Option {
         this.value = option.getValue();
     }
 
-    public byte[] encryptAndEncode(byte[] confidential, byte[] aad, OSTid tid) throws CoseException {
+    public byte[] encryptAndEncodeRequest(byte[] confidential, byte[] aad, OSTid tid) throws CoseException{
         Encrypt0Message enc = new Encrypt0Message();
-
         enc.SetContent(confidential);
         enc.setExternal(aad);
-        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);//TODO vad skiljer fr[n setExternal()
         enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()),Attribute.ProtectedAttributes);
+        return encryptAndEncode(enc, tid);
+    }
+
+     public byte[] encryptAndEncodeResponse(byte[] confidential, byte[] aad, OSTid tid) throws CoseException{
+        Encrypt0Message enc = new Encrypt0Message();
+        enc.SetContent(confidential);
+        enc.setExternal(aad);
+        return encryptAndEncode(enc, tid);
+    }
+
+    private byte[] encryptAndEncode(Encrypt0Message enc, OSTid tid) throws CoseException {
         enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
+        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);//TODO vad skiljer fr[n setExternal()
         try {
             byte[] key = tid.getSenderKey();
             tid.increaseSenderSeq();
@@ -44,7 +54,7 @@ public class ObjectSecurityOption extends Option {
         return enc.EncodeToBytes();
     }
 
-    public byte[] extcractCidFromProtected(byte[] protectedData){
+    public static byte[] extractCidFromProtected(byte[] protectedData){
         Encrypt0Message enc = new Encrypt0Message();
         try {
             enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(protectedData));
@@ -55,9 +65,18 @@ public class ObjectSecurityOption extends Option {
         return cid;
     }
 
-    public byte[] decryptAndDecode(byte[] payload, int code) throws OSSequenceNumberException{
+    public static byte[] extractSeqFromProtected(byte[] protectedData){
+        Encrypt0Message enc = new Encrypt0Message();
+        try {
+            enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(protectedData));
+        } catch (CoseException e) {
+            e.printStackTrace();
+        }
+        byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
+        return seq;
+    }
 
-        System.out.println("desr: " + bytesToHex(payload));
+     public byte[] decryptAndDecodeRequest(byte[] payload, byte[] aad) throws OSSequenceNumberException{
         Encrypt0Message enc = new Encrypt0Message();
         try {
             enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
@@ -65,14 +84,30 @@ public class ObjectSecurityOption extends Option {
             e.printStackTrace();
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
-        byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
         OSTid tid = OSHashMapTIDDB.getDB().getTID(cid);
+        return decryptAndDecode(enc, tid, payload, aad);
+    }
+
+    public byte[] decryptAndDecodeResponse(byte[] payload, byte[] aad, OSTid tid) throws OSSequenceNumberException{
+        Encrypt0Message enc = new Encrypt0Message();
+        try {
+            enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(payload));
+        } catch (CoseException e) {
+            e.printStackTrace();
+        }
+        return decryptAndDecode(enc, tid, payload, aad);
+    }
+
+    private byte[] decryptAndDecode(Encrypt0Message enc, OSTid tid, byte[] payload, byte[] aad) throws OSSequenceNumberException{
+
+        System.out.println("desr: " + bytesToHex(payload));
+
+        byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
 
         System.out.println("seq1: " + bytesToHex(seq));
         System.out.println("seq2: " + bytesToHex(tid.getReceiverSeq()));
-        byte[] aad = OSSerializer.serializeReceiverAdditionalAuthenticatedData(code, tid);
         enc.setExternal(aad);
-        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg(), Attribute.DontSendAttributes);
+        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
 
         if (tid == null) {
             //throw new OSTIDException("No Context for URI.");

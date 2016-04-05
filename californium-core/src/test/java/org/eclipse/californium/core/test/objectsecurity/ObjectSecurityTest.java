@@ -60,7 +60,7 @@ public class ObjectSecurityTest {
         request.setType(CoAP.Type.CON);
 		request.getOptions().addOption(new ObjectSecurityOption());
         try {
-                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
+                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -86,13 +86,18 @@ public class ObjectSecurityTest {
 		request.getOptions().addOption(new ObjectSecurityOption());
         assertEquals(2,request.getOptions().getLocationPathCount());
         try {
-            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
+            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
         assertEquals(0,request.getOptions().getLocationPathCount());
-        osLayer.prepareReceive(request, request.getCode().value);
+        try {
+            osLayer.prepareReceive(request);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
         assertEquals(2,request.getOptions().getLocationPathCount());
     }
 
@@ -104,13 +109,18 @@ public class ObjectSecurityTest {
         request.setPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
         try {
-            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
+            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
         assertFalse("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
-        osLayer.prepareReceive(request, request.getCode().value);
+        try {
+            osLayer.prepareReceive(request);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
     }
 
@@ -131,12 +141,17 @@ public class ObjectSecurityTest {
         int clientSeq = 0;
         for (Request request : requests) {
             try {
-                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
+                osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
             } catch (OSTIDException e) {
                 e.printStackTrace();
                 assertTrue(false);
             }
-            osLayer.prepareReceive(request, request.getCode().value);
+            try {
+                osLayer.prepareReceive(request);
+            } catch (OSTIDException e) {
+                e.printStackTrace();
+                assertTrue(false);
+            }
             clientSeq++;
         }
 
@@ -156,13 +171,18 @@ public class ObjectSecurityTest {
         request.getOptions().addOption(new ObjectSecurityOption());
         try {
             //sending seq 1
-            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"), request.getCode().value);
+            osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
         //receiving seq 1
-        osLayer.prepareReceive(request, request.getCode().value);
+        try {
+            osLayer.prepareReceive(request);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
 
 
     }
