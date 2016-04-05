@@ -24,7 +24,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         OptionSet options = message.getOptions();
         byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(message.getCode().value, tid, message.getURI());
         //This cast is ok since we explicity initialize an OSOption when sending
-        ObjectSecurityOption osOpt = OptionJuggle.filterOSOption(options);
+        ObjectSecurityOption osOpt = (ObjectSecurityOption) OptionJuggle.filterOSOption(options);
 
         if (tid == null) {
             System.out.print("TID NOT PRESENT, ABORTING");
@@ -46,7 +46,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 osOpt.setValue(protectedPayload);
                 message.setPayload(new byte[0]);
             }
-            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options));
+            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options, osOpt));
 
         }
 
@@ -57,7 +57,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         OptionSet options = message.getOptions();
         byte[] aad = OSSerializer.serializeSendResponseAdditionalAuthenticatedData(message.getCode().value, tid);
         //This cast is ok since we explicity initialize an OSOption when sending
-        ObjectSecurityOption osOpt = OptionJuggle.filterOSOption(options);
+        ObjectSecurityOption osOpt = (ObjectSecurityOption) OptionJuggle.filterOSOption(options);
 
         if (tid == null) {
             System.out.print("TID NOT PRESENT, ABORTING");
@@ -79,7 +79,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 osOpt.setValue(protectedPayload);
                 message.setPayload(new byte[0]);
             }
-            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options));
+            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options, osOpt));
 
         }
 
@@ -161,19 +161,6 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
 
 
-
-    //TODO remove development method:
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
     @Override
     public void sendRequest(Exchange exchange, Request request){
 
@@ -221,29 +208,31 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveRequest(Exchange exchange, Request request) {
-        //TODO break if no OSOpt
-        byte[] cid = null;
-        try {
-            cid = prepareReceive(request);
-        } catch (OSTIDException e) {
-            //TODO fail gracefully
-            e.printStackTrace();
-            System.exit(1);
+        if (isProtected(request)) {
+            byte[] cid = null;
+            try {
+                cid = prepareReceive(request);
+            } catch (OSTIDException e) {
+                //TODO fail gracefully
+                e.printStackTrace();
+                System.exit(1);
+            }
+            exchange.setCryptographicContextID(cid);
         }
-       exchange.setCryptographicContextID(cid);
        super.receiveRequest(exchange, request);
     }
 
     @Override
     public void receiveResponse(Exchange exchange, Response response) {
-        //TODO break if no OSOpt
-        try {
-            OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
-            prepareReceive(response, tid);
-        } catch (OSTIDException e) {
-            //TODO fail gracefully
-            e.printStackTrace();
-            System.exit(1);
+        if (isProtected(response)) {
+            try {
+                OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
+                prepareReceive(response, tid);
+            } catch (OSTIDException e) {
+                //TODO fail gracefully
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
         super.receiveResponse(exchange,response);
     }
@@ -263,4 +252,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
+    private boolean isProtected(Message message){
+        return OptionJuggle.filterOSOption(message.getOptions()) != null;
+    }
 }

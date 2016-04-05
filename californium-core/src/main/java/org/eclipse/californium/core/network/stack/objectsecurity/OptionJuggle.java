@@ -9,8 +9,8 @@ import org.eclipse.californium.core.coap.OptionSet;
  */
 public class OptionJuggle {
 
-    public static OptionSet moveOptionsToOSPayload(OptionSet options) {
-        ObjectSecurityOption osOpt = filterOSOption(options);
+    public static OptionSet moveOptionsToOSPayload(OptionSet options, ObjectSecurityOption osOpt) {
+
         boolean hasProxyUri = options.hasProxyUri();
         String proxyUri = null;
         if (hasProxyUri) {
@@ -32,11 +32,11 @@ public class OptionJuggle {
         return options;
     }
 
-    public static ObjectSecurityOption filterOSOption(OptionSet options){
+    public static Option filterOSOption(OptionSet options){
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
             for (Option o : options.asSortedList()) {
                 if (o.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) {
-                    return (ObjectSecurityOption) o;
+                    return o;
                 }
             }
         }
