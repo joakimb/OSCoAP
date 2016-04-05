@@ -176,9 +176,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void sendRequest(Exchange exchange, Request request){
-        OptionSet options = request.getOptions();
-        if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
-            try {
+        if(shouldProtectRequest(request)){
+           try {
                 String uri = request.getURI();
                 OSTid tid = db.getTID(uri);
                 exchange.setCryptographicContextID(tid.getCid());
@@ -196,7 +195,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     @Override
     public void sendResponse(Exchange exchange, Response response) {
 
-        if(shouldProtectMessage(exchange)) {
+        if(shouldProtectResponse(exchange)) {
 
             response.getOptions().addOption(new ObjectSecurityOption());
 
@@ -252,8 +251,14 @@ public class ObjectSecurityLayer extends AbstractLayer {
         super.receiveEmptyMessage(exchange, message);
     }
 
-    private boolean shouldProtectMessage(Exchange exchange){
+    private boolean shouldProtectResponse(Exchange exchange){
         return exchange.getCurrentRequest().getOptions().hasOption(OptionNumberRegistry.OBJECT_SECURITY);
+    }
+
+    private boolean shouldProtectRequest(Request request){
+        OptionSet options = request.getOptions();
+        return options.hasOption(OptionNumberRegistry.OBJECT_SECURITY);
+
     }
 
 }
