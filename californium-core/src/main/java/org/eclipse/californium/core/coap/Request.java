@@ -35,6 +35,8 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
+import org.eclipse.californium.core.network.stack.objectsecurity.Encryptor;
+import org.eclipse.californium.core.network.stack.objectsecurity.RequestEncryptor;
 
 /**
  * Request represents a CoAP request and has either the {@link Type} CON or NON
@@ -363,7 +365,7 @@ public class Request extends Message {
 		if (getDestinationPort() == 0)
 			throw new NullPointerException("Destination port is 0");
 	}
-	
+
 	/**
 	 * Sets CoAP's observe option. If the target resource of this request
 	 * responds with a success code and also sets the observe option, it will
@@ -375,7 +377,7 @@ public class Request extends Message {
 		getOptions().setObserve(0);
 		return this;
 	}
-	
+
 	/**
 	 * Sets CoAP's observe option to the value of 1 to proactively cancel.
 	 * 

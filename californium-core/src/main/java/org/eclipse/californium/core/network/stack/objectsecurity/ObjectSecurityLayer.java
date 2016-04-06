@@ -20,36 +20,10 @@ public class ObjectSecurityLayer extends AbstractLayer {
         db = OSHashMapTIDDB.getDB();
     }
 
-    public void prepareSend(Request message, OSTid tid) throws OSTIDException {
-        OptionSet options = message.getOptions();
-        byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(message.getCode().value, tid, message.getURI());
-        //This cast is ok since we explicity initialize an OSOption when sending
-        ObjectSecurityOption osOpt = (ObjectSecurityOption) OptionJuggle.filterOSOption(options);
+    public Request prepareSend(Request message, OSTid tid) throws OSTIDException {
 
-        if (tid == null) {
-            System.out.print("TID NOT PRESENT, ABORTING");
-            System.exit(1);
-            //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
-        } else {
-            byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
-            byte[] protectedPayload = null;
-            try {
-                protectedPayload = osOpt.encryptAndEncodeRequest(confidential,aad,tid);
-            } catch (CoseException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            if (message.getPayloadSize() > 0) {
-                osOpt.setValue(new byte[0]);
-                message.setPayload(protectedPayload);
-            } else {
-                osOpt.setValue(protectedPayload);
-                message.setPayload(new byte[0]);
-            }
-            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options, osOpt));
-
-        }
-
+        RequestEncryptor encryptor = new RequestEncryptor(tid, message);
+        return encryptor.encrypt();
 
     }
 
@@ -168,7 +142,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 OSTid tid = db.getTID(uri);
                 //make sure we can find Security Context for associated Response
                 exchange.setCryptographicContextID(tid.getCid());
-                prepareSend(request, tid);
+                request = prepareSend(request, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully
                 e.printStackTrace();

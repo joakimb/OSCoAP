@@ -136,7 +136,7 @@ public abstract class Message {
 	public Message(Type type) {
 		this.type = type;
 	}
-	
+
 	/**
 	 * Gets the message type ({@link Type#CON}, {@link Type#NON},
 	 * {@link Type#ACK} or {@link Type#RST}). If no type has been defined, the
