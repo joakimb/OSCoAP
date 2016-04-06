@@ -1,4 +1,4 @@
-package org.eclipse.californium.core.network.stack.objectsecurity;
+package org.eclipse.californium.core.network.stack.objectsecurity.Encryption;
 
 import COSE.Attribute;
 import COSE.CoseException;
@@ -6,24 +6,26 @@ import COSE.Encrypt0Message;
 import COSE.HeaderKeys;
 import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
+import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
  * Created by joakim on 06/04/16.
  */
-public class ResponseEncryptor extends Encryptor{
-    Response response;
+public class RequestEncryptor extends Encryptor {
 
-    public ResponseEncryptor(Response response, OSTid tid){
+    Request request;
+
+    public RequestEncryptor(Request request, OSTid tid){
         this.tid = tid;
-        this.response = response;
+        this.request = request;
     }
 
-    public Response encrypt() throws OSTIDException {
+    public Request encrypt() throws OSTIDException{
 
         checkTid();
-        collectData(response);
+        collectData(request);
 
         Encrypt0Message enc = prepareCOSEStructure(confidential, aad, tid);
 
@@ -35,13 +37,14 @@ public class ResponseEncryptor extends Encryptor{
             System.exit(1);
         }
 
-        setOSPayload(protectedPayload, response);
-        return response;
+        setOSPayload(protectedPayload, request);
+        return request;
     }
 
     protected byte[] serializeAAD(){
-        int code = response.getCode().value;
-        return OSSerializer.serializeSendResponseAdditionalAuthenticatedData(code, tid);
+        int code = request.getCode().value;
+        String uri = request.getURI();
+        return OSSerializer.serializeRequestAdditionalAuthenticatedData(code, tid, uri);
     }
 
 
@@ -49,6 +52,7 @@ public class ResponseEncryptor extends Encryptor{
         Encrypt0Message enc = new Encrypt0Message();
         enc.SetContent(confidential);
         enc.setExternal(aad);
+        enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()), Attribute.ProtectedAttributes);
         return enc;
     }
 }

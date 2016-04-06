@@ -1,13 +1,12 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
-import COSE.CoseException;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
+import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestEncryptor;
+import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseEncryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
-
-import java.util.List;
 
 /**
  * Created by joakim on 04/02/16.

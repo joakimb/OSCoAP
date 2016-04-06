@@ -35,8 +35,6 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
-import org.eclipse.californium.core.network.stack.objectsecurity.Encryptor;
-import org.eclipse.californium.core.network.stack.objectsecurity.RequestEncryptor;
 
 /**
  * Request represents a CoAP request and has either the {@link Type} CON or NON
