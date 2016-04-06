@@ -3,6 +3,7 @@ package org.eclipse.californium.core.network.stack.objectsecurity;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
+import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestDecryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestEncryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseEncryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
@@ -32,41 +33,13 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
-    public byte[] prepareReceive(Request req) throws OSTIDException {
+    public byte[] prepareReceive(Request request) throws OSTIDException {
 
-        OptionSet options = req.getOptions();
-        Option o = OptionJuggle.filterOSOption(options);
+        RequestDecryptor decryptor = new RequestDecryptor(request);
+        return decryptor.decrypt();
 
-        //byte[] cid = null;
-
-        if ( o != null) {
-
-            ObjectSecurityOption op = new ObjectSecurityOption(o);
-
-            byte[] protectedData = op.getLength() == 0 ? req.getPayload() : op.getValue();
-            //TODO check seq validity
-            byte[] cid = ObjectSecurityOption.extractCidFromProtected(protectedData);
-            OSTid tid = db.getTID(cid);
-
-            //byte[] seq = ObjectSecurityOption.extractSeqFromProtected(protectedData);
-
-            byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(req.getCode().value, tid, req.getURI());
-            byte[] content = new byte[0];
-            try {
-                content = op.decryptAndDecodeRequest(protectedData, aad);
-
-            } catch (OSSequenceNumberException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            OptionSet optionSet = OptionJuggle.readOptionsFromOSPayload(content);
-            req.setOptions(optionSet);
-            byte[] payload = OSSerializer.readPayload(content);
-            req.setPayload(payload);
-            return cid;
-        }
-        return null;
     }
+
     public byte[] prepareReceive(Response response, OSTid tid) throws OSTIDException {
 
         OptionSet options = response.getOptions();
