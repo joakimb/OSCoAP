@@ -6,24 +6,24 @@ import COSE.Encrypt0Message;
 import COSE.HeaderKeys;
 import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
  * Created by joakim on 06/04/16.
  */
-public class RequestEncryptor extends Encryptor {
+public class ResponseEncryptor extends Encryptor{
+    Response response;
 
-    Request request;
-
-    public RequestEncryptor(Request request, OSTid tid){
+    public ResponseEncryptor(Response response, OSTid tid){
         this.tid = tid;
-        this.request = request;
+        this.response = response;
     }
 
-    public Request encrypt() throws OSTIDException{
+    public Response encrypt() throws OSTIDException {
 
         checkTid();
-        collectData(request);
+        collectData(response);
 
         Encrypt0Message enc = prepareCOSEStructure(confidential, aad, tid);
 
@@ -35,14 +35,13 @@ public class RequestEncryptor extends Encryptor {
             System.exit(1);
         }
 
-        setOSPayload(protectedPayload, request);
-        return request;
+        setOSPayload(protectedPayload, response);
+        return response;
     }
 
     protected byte[] serializeAAD(){
-        int code = request.getCode().value;
-        String uri = request.getURI();
-        return OSSerializer.serializeRequestAdditionalAuthenticatedData(code, tid, uri);
+        int code = response.getCode().value;
+        return OSSerializer.serializeSendResponseAdditionalAuthenticatedData(code, tid);
     }
 
 
@@ -50,7 +49,6 @@ public class RequestEncryptor extends Encryptor {
         Encrypt0Message enc = new Encrypt0Message();
         enc.SetContent(confidential);
         enc.setExternal(aad);
-        enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()), Attribute.ProtectedAttributes);
         return enc;
     }
 }

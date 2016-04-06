@@ -22,44 +22,14 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     public Request prepareSend(Request message, OSTid tid) throws OSTIDException {
 
-        RequestEncryptor encryptor = new RequestEncryptor(tid, message);
+        RequestEncryptor encryptor = new RequestEncryptor(message, tid);
         return encryptor.encrypt();
 
     }
 
-    //TODO, enda som skiljer e aad = och protectedPayload =...
-
-
-    public void prepareSend(Response message, OSTid tid) throws OSTIDException {
-        OptionSet options = message.getOptions();
-        byte[] aad = OSSerializer.serializeSendResponseAdditionalAuthenticatedData(message.getCode().value, tid);
-        //This cast is ok since we explicity initialize an OSOption when sending
-        ObjectSecurityOption osOpt = (ObjectSecurityOption) OptionJuggle.filterOSOption(options);
-
-        if (tid == null) {
-            System.out.print("TID NOT PRESENT, ABORTING");
-            System.exit(1);
-            //TODO change behaviour to ignore OS or throw Exception earlier i chain, e.g. in CoapClient.java
-        } else {
-            byte[] confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
-            byte[] protectedPayload = null;
-            try {
-                protectedPayload = osOpt.encryptAndEncodeResponse(confidential, aad, tid);
-            } catch (CoseException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            if (message.getPayloadSize() > 0) {
-                osOpt.setValue(new byte[0]);
-                message.setPayload(protectedPayload);
-            } else {
-                osOpt.setValue(protectedPayload);
-                message.setPayload(new byte[0]);
-            }
-            message.setOptions(OptionJuggle.moveOptionsToOSPayload(options, osOpt));
-
-        }
-
+    public Response prepareSend(Response message, OSTid tid) throws OSTIDException {
+        ResponseEncryptor encryptor = new ResponseEncryptor(message, tid);
+        return encryptor.encrypt();
 
     }
 
