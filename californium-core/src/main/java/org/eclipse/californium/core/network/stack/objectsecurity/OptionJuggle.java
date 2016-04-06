@@ -4,6 +4,8 @@ import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.OptionSet;
 
+import java.util.List;
+
 /**
  * Created by joakim on 05/04/16.
  */
@@ -32,6 +34,15 @@ public class OptionJuggle {
         return options;
     }
 
+    public static OptionSet readOptionsFromOSPayload(byte[] content){
+        List<Option> optionList = OSSerializer.readConfidentialOptions(content);
+        OptionSet optionSet = new OptionSet();
+        for (Option option : optionList) {
+            optionSet.addOption(option);
+        }
+        return optionSet;
+    }
+
     public static Option filterOSOption(OptionSet options){
         if (options.hasOption(OptionNumberRegistry.OBJECT_SECURITY)) {
             for (Option o : options.asSortedList()) {
@@ -42,5 +53,6 @@ public class OptionJuggle {
         }
         return null;
     }
+
 
 }

@@ -53,6 +53,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
+    //TODO, enda som skiljer e aad = och protectedPayload =...
+
+
     public void prepareSend(Response message, OSTid tid) throws OSTIDException {
         OptionSet options = message.getOptions();
         byte[] aad = OSSerializer.serializeSendResponseAdditionalAuthenticatedData(message.getCode().value, tid);
@@ -87,8 +90,6 @@ public class ObjectSecurityLayer extends AbstractLayer {
     }
 
     public byte[] prepareReceive(Request req) throws OSTIDException {
-        //todo
-        //h'mta cid fr[n kid i enc0msg                 cid = op.extcractCidFromProtected(protectedData);
 
         OptionSet options = req.getOptions();
         Option o = OptionJuggle.filterOSOption(options);
@@ -115,10 +116,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 e.printStackTrace();
                 System.exit(1);
             }
-            List<Option> optionList = OSSerializer.readConfidentialOptions(content);
-            for (Option option : optionList) {
-                req.getOptions().addOption(option);
-            }
+            OptionSet optionSet = OptionJuggle.readOptionsFromOSPayload(content);
+            req.setOptions(optionSet);
             byte[] payload = OSSerializer.readPayload(content);
             req.setPayload(payload);
             return cid;
@@ -148,10 +147,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 e.printStackTrace();
                 System.exit(1);
             }
-            List<Option> optionList = OSSerializer.readConfidentialOptions(content);
-            for (Option option : optionList) {
-                response.getOptions().addOption(option);
-            }
+            OptionSet optionSet = OptionJuggle.readOptionsFromOSPayload(content);
+            response.setOptions(optionSet);
+
             byte[] payload = OSSerializer.readPayload(content);
             response.setPayload(payload);
             return tid.getCid();
