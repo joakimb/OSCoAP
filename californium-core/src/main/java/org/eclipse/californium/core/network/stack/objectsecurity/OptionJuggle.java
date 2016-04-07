@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class OptionJuggle {
 
-    public static OptionSet moveOptionsToOSPayload(OptionSet options, ObjectSecurityOption osOpt) {
+    public static OptionSet moveOptionsToOSPayload(OptionSet options, Option osOpt) {
 
         boolean hasProxyUri = options.hasProxyUri();
         String proxyUri = null;

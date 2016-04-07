@@ -74,7 +74,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
         if(shouldProtectResponse(exchange)) {
 
-            response.getOptions().addOption(new ObjectSecurityOption());
+            response.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
 
             try {
                 OSTid tid = db.getTID(exchange.getCryptgraphicContextID());

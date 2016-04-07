@@ -28,18 +28,11 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.californium.core.coap.BlockOption;
-import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.coap.CoAP.Type;
-import org.eclipse.californium.core.coap.LinkFormat;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.MessageObserverAdapter;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.stack.objectsecurity.ObjectSecurityOption;
 
 /**
  * The Class CoapClient.
@@ -903,7 +896,7 @@ public class CoapClient {
 
 		//check if object security should be used
 		if (this.objectSecurity){
-			request.getOptions().addOption(new ObjectSecurityOption());
+			request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
 		}
 
 		// use the specified message type

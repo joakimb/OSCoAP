@@ -5,6 +5,8 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.Option;
+import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
@@ -58,7 +60,7 @@ public class ObjectSecurityTest {
     public void testEncryptedNoOptionsNoPayload(){
         Request request = Request.newGet().setURI("coap://localhost:5683");
         request.setType(CoAP.Type.CON);
-		request.getOptions().addOption(new ObjectSecurityOption());
+		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         try {
                 osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
         } catch (OSTIDException e) {
@@ -83,7 +85,7 @@ public class ObjectSecurityTest {
         Request request = Request.newGet().setURI("coap://localhost:5683");
         request.setType(CoAP.Type.CON);
         request.getOptions().setLocationPath("/test/path");
-		request.getOptions().addOption(new ObjectSecurityOption());
+		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         assertEquals(2,request.getOptions().getLocationPathCount());
         try {
             osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));
@@ -105,7 +107,7 @@ public class ObjectSecurityTest {
     public void testDecryptPayloadInPayload(){
         Request request = Request.newPost().setURI("coap://localhost:5683");
         request.setType(CoAP.Type.CON);
-		request.getOptions().addOption(new ObjectSecurityOption());
+		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         request.setPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
         try {
@@ -135,7 +137,7 @@ public class ObjectSecurityTest {
         for (int i  = 0; i < 100; i++){
             Request request = Request.newPost().setURI("coap://localhost:5683");
             request.setType(CoAP.Type.CON);
-		    request.getOptions().addOption(new ObjectSecurityOption());
+		    request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
             requests.add(request);
         }
         int clientSeq = 0;
@@ -168,7 +170,7 @@ public class ObjectSecurityTest {
     public void testSequenceNumbersReplayReject(){
         Request request = Request.newPost().setURI("coap://localhost:5683");
         request.setType(CoAP.Type.CON);
-        request.getOptions().addOption(new ObjectSecurityOption());
+        request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         try {
             //sending seq 1
             osLayer.prepareSend(request, db.getTID("coap://localhost:5683"));

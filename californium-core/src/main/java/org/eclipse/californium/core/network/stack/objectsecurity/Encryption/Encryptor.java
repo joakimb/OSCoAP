@@ -7,10 +7,10 @@ import COSE.HeaderKeys;
 import com.upokecenter.cbor.CBORObject;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.Message;
+import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
-import org.eclipse.californium.core.network.stack.objectsecurity.ObjectSecurityOption;
 import org.eclipse.californium.core.network.stack.objectsecurity.OptionJuggle;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
@@ -44,7 +44,7 @@ public abstract class Encryptor {
 
     protected void setOSPayload(byte[] protectedPayload, Message message) {
 
-        ObjectSecurityOption osOpt = (ObjectSecurityOption) OptionJuggle.filterOSOption(options);
+        Option osOpt = OptionJuggle.filterOSOption(options);
         if (message.getPayloadSize() > 0) {
             osOpt.setValue(new byte[0]);
             message.setPayload(protectedPayload);
