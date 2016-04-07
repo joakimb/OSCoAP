@@ -5,6 +5,7 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.stack.AbstractLayer;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestDecryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestEncryptor;
+import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseDecryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseEncryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
@@ -40,37 +41,10 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
-    public byte[] prepareReceive(Response response, OSTid tid) throws OSTIDException {
+    public void prepareReceive(Response response, OSTid tid) throws OSTIDException {
 
-        OptionSet options = response.getOptions();
-        Option o = OptionJuggle.filterOSOption(options);
-
-        //byte[] cid = null;
-
-        if ( o != null) {
-
-            ObjectSecurityOption op = new ObjectSecurityOption(o);
-
-            byte[] protectedData = op.getLength() == 0 ? response.getPayload() : op.getValue();
-
-            byte[] seq = ObjectSecurityOption.extractSeqFromProtected(protectedData);
-            byte[] aad = OSSerializer.serializeReceiveResponseAdditionalAuthenticatedData(response.getCode().value, tid, seq);
-            byte[] content = new byte[0];
-            try {
-                content = op.decryptAndDecodeResponse(protectedData, aad, tid);
-
-            } catch (OSSequenceNumberException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            OptionSet optionSet = OptionJuggle.readOptionsFromOSPayload(content);
-            response.setOptions(optionSet);
-
-            byte[] payload = OSSerializer.readPayload(content);
-            response.setPayload(payload);
-            return tid.getCid();
-        }
-        return null;
+        ResponseDecryptor decryptor = new ResponseDecryptor(response);
+        decryptor.decrypt(tid);
     }
 
 

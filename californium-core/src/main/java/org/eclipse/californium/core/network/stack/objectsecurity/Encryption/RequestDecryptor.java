@@ -62,6 +62,7 @@ public class RequestDecryptor extends Decryptor {
         return cid;
     }
 
+    @Override
     protected OSTid getTid() throws OSException {
         if (enc == null) {
             throw new OSException("enc not initialized");
@@ -71,6 +72,7 @@ public class RequestDecryptor extends Decryptor {
         return tid;
     }
 
+    @Override
     protected byte[] serializeAAD(OSTid tid) {
         return OSSerializer.serializeRequestAdditionalAuthenticatedData(request.getCode().value, tid, request.getURI());
     }
