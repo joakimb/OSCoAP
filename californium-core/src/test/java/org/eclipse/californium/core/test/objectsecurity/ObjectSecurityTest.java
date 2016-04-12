@@ -258,9 +258,8 @@ public class ObjectSecurityTest {
             });
             server2.start();
 
-        CoapClient client = new CoapClient(uri);
-        CoapClient client2 = new CoapClient(uri);
-            client.useObjectSecurity();
+        OSCoapClient client = new OSCoapClient(uri, db);
+        OSCoapClient client2 = new OSCoapClient(uri, db);
         OSTid tid = new OSTid(BigInteger.ONE);
         OSTidDB db = OSHashMapTIDDB.getDB();
         try {
