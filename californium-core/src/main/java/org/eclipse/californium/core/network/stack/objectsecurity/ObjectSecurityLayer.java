@@ -54,7 +54,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         if(shouldProtectRequest(request)){
            try {
                 String uri = request.getURI();
-                CryptoContext tid = db.getContext(uri);
+                CryptoContext tid = exchange.getCryptographicContextDB().getContext(uri);
                 //make sure we can find Security Context for associated Response
                 exchange.setCryptographicContextID(tid.getCid());
                 request = prepareSend(request, tid);
@@ -113,7 +113,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void receiveResponse(Exchange exchange, Response response) {
         if (isProtected(response)) {
             try {
-                CryptoContext tid = db.getContext(exchange.getCryptgraphicContextID());
+                CryptoContext tid = exchange.getCryptographicContextDB().getContext(exchange.getCryptgraphicContextID());
                 prepareReceive(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully
