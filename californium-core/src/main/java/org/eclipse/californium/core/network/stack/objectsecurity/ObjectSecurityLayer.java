@@ -7,7 +7,6 @@ import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.Requ
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestEncryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseDecryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseEncryptor;
-import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
@@ -15,20 +14,20 @@ import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OS
  */
 public class ObjectSecurityLayer extends AbstractLayer {
 
-    OSTidDB db;
+    CryptoContextDB db;
 
     public ObjectSecurityLayer(){
-        db = OSHashMapTIDDB.getDB();
+        db = OSCryptoContextDB.getDB();
     }
 
-    public Request prepareSend(Request message, OSTid tid) throws OSTIDException {
+    public Request prepareSend(Request message, CryptoContext tid) throws OSTIDException {
 
         RequestEncryptor encryptor = new RequestEncryptor(message, tid);
         return encryptor.encrypt();
 
     }
 
-    public Response prepareSend(Response message, OSTid tid) throws OSTIDException {
+    public Response prepareSend(Response message, CryptoContext tid) throws OSTIDException {
         ResponseEncryptor encryptor = new ResponseEncryptor(message, tid);
         return encryptor.encrypt();
 
@@ -41,7 +40,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
-    public void prepareReceive(Response response, OSTid tid) throws OSTIDException {
+    public void prepareReceive(Response response, CryptoContext tid) throws OSTIDException {
 
         ResponseDecryptor decryptor = new ResponseDecryptor(response);
         decryptor.decrypt(tid);
@@ -55,7 +54,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         if(shouldProtectRequest(request)){
            try {
                 String uri = request.getURI();
-                OSTid tid = db.getTID(uri);
+                CryptoContext tid = db.getContext(uri);
                 //make sure we can find Security Context for associated Response
                 exchange.setCryptographicContextID(tid.getCid());
                 request = prepareSend(request, tid);
@@ -77,7 +76,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             response.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
 
             try {
-                OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
+                CryptoContext tid = db.getContext(exchange.getCryptgraphicContextID());
                 prepareSend(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully
@@ -114,7 +113,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void receiveResponse(Exchange exchange, Response response) {
         if (isProtected(response)) {
             try {
-                OSTid tid = db.getTID(exchange.getCryptgraphicContextID());
+                CryptoContext tid = db.getContext(exchange.getCryptgraphicContextID());
                 prepareReceive(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully

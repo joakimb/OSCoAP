@@ -32,7 +32,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.stack.BlockwiseLayer;
 import org.eclipse.californium.core.network.stack.BlockwiseStatus;
 import org.eclipse.californium.core.network.stack.CoapStack;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTidDB;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContextDB;
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
@@ -148,7 +148,7 @@ public class Exchange {
 	private byte[] cryptoContextId;
 
 	//If object security option is used, the Cryptographic context database is stored here
-	private OSTidDB cryptoContextDB;
+	private CryptoContextDB cryptoContextDB;
 
 	/**
 	 * Constructs a new exchange with the specified request and origin. 
@@ -521,7 +521,7 @@ public class Exchange {
 	 * Sets cryptoContextDB
 	 * @param cryptoContextDB byte array used for mapping cryptographic contexts
 	 */
-	public void setCryptographicContextDB(OSTidDB cryptoContextDB){
+	public void setCryptographicContextDB(CryptoContextDB cryptoContextDB){
 		this.cryptoContextDB = cryptoContextDB;
 	}
 
@@ -529,7 +529,7 @@ public class Exchange {
 	 * Sets cryptoContextDB
 	 * @return cryptoContextDB
 	 */
-	public OSTidDB getCryptographicContextDB(){
+	public CryptoContextDB getCryptographicContextDB(){
 		return this.cryptoContextDB;
 	}
 

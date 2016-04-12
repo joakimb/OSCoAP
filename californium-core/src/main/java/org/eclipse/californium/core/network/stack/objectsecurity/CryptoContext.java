@@ -1,14 +1,13 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.AlgorithmID;
-import com.upokecenter.cbor.CBORObject;
 
 import java.math.BigInteger;
 
 /**
  * Created by joakim on 2016-02-23.
  */
-public class OSTid {
+public class CryptoContext {
 
 
     //TODO, BigInteger encodes to 2-complement in .toByteArray(), should not be a problem, but test it
@@ -21,7 +20,7 @@ public class OSTid {
     private byte[] senderKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
     private byte[] receiverKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
-    public OSTid(BigInteger cid){
+    public CryptoContext(BigInteger cid){
         this.cid = cid;
         //this.senderSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
         //this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
@@ -93,8 +92,8 @@ public class OSTid {
 
     @Override
     public boolean equals(Object o){
-        if (!( o instanceof OSTid)) return false;
-        OSTid other = (OSTid)o;
+        if (!( o instanceof CryptoContext)) return false;
+        CryptoContext other = (CryptoContext)o;
         return other.cid.equals(this.cid);
     }
 

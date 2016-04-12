@@ -6,7 +6,6 @@ import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.network.serialization.DatagramReader;
 import org.eclipse.californium.core.network.serialization.DatagramWriter;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class OSSerializer {
         return writer.toByteArray();
     }
 
-    public static byte[] serializeSendResponseAdditionalAuthenticatedData(int code, OSTid tid){
+    public static byte[] serializeSendResponseAdditionalAuthenticatedData(int code, CryptoContext tid){
         DatagramWriter writer = new DatagramWriter();
         writeCoAPHeader(writer, code);
         writeAlgorithm(writer, tid);
@@ -37,7 +36,7 @@ public class OSSerializer {
         return writer.toByteArray();
     }
 
-    public static byte[] serializeReceiveResponseAdditionalAuthenticatedData(int code, OSTid tid, byte[] seq){
+    public static byte[] serializeReceiveResponseAdditionalAuthenticatedData(int code, CryptoContext tid, byte[] seq){
         DatagramWriter writer = new DatagramWriter();
         writeCoAPHeader(writer, code);
         writeAlgorithm(writer, tid);
@@ -47,7 +46,7 @@ public class OSSerializer {
     }
 
 
-    public static byte[] serializeRequestAdditionalAuthenticatedData(int code, OSTid tid, String uri){
+    public static byte[] serializeRequestAdditionalAuthenticatedData(int code, CryptoContext tid, String uri){
         DatagramWriter writer = new DatagramWriter();
         writeCoAPHeader(writer, code);
         writeAlgorithm(writer, tid);
@@ -59,11 +58,11 @@ public class OSSerializer {
        //TODO
     }
 
-    private static void writeAlgorithm(DatagramWriter writer, OSTid tid){
+    private static void writeAlgorithm(DatagramWriter writer, CryptoContext tid){
         writer.write(tid.getAlg().AsCBOR().AsInt32(), 32);
     }
 
-//    private static void writeReceiverTid(DatagramWriter writer, OSTid tid){
+//    private static void writeReceiverTid(DatagramWriter writer, CryptoContext tid){
 //        writer.writeBytes(tid.getCid());
 //        writer.writeBytes(stripZeroes(tid.getReceiverSeq()));
 //    }

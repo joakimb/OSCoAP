@@ -9,8 +9,8 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionSet;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContext;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
 import org.eclipse.californium.core.network.stack.objectsecurity.OptionJuggle;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
@@ -18,12 +18,12 @@ import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OS
  * Created by joakim on 06/04/16.
  */
 public abstract class Encryptor {
-    OSTid tid;
+    CryptoContext tid;
     OptionSet options;
     byte[] confidential;
     byte[] aad;
 
-    protected byte[] encryptAndEncode(Encrypt0Message enc, OSTid tid) throws CoseException {
+    protected byte[] encryptAndEncode(Encrypt0Message enc, CryptoContext tid) throws CoseException {
         enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);//TODO vad skiljer fr[n setExternal()
         try {

@@ -8,8 +8,7 @@ import com.upokecenter.cbor.CBORObject;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContext;
 import org.eclipse.californium.core.network.stack.objectsecurity.OptionJuggle;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
@@ -29,7 +28,7 @@ public abstract class Decryptor {
 
 
         byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
-        OSTid tid = getTid();
+        CryptoContext tid = getTid();
         checkTid(tid);
         enc.setExternal(serializeAAD(tid));
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
@@ -70,7 +69,7 @@ public abstract class Decryptor {
         return enc;
     }
 
-    protected void checkTid(OSTid tid) throws OSTIDException {
+    protected void checkTid(CryptoContext tid) throws OSTIDException {
         if (tid == null) {
             System.out.print("TID NOT PRESENT, ABORTING");
             System.exit(1);
@@ -78,6 +77,6 @@ public abstract class Decryptor {
         }
     }
 
-    protected abstract byte[] serializeAAD(OSTid tid);
-    protected abstract OSTid getTid() throws OSException;
+    protected abstract byte[] serializeAAD(CryptoContext tid);
+    protected abstract CryptoContext getTid() throws OSException;
 }

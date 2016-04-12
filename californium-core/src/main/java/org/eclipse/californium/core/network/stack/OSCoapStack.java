@@ -4,7 +4,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.Outbox;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTidDB;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContextDB;
 import org.eclipse.californium.core.network.stack.objectsecurity.ObjectSecurityLayer;
 
 /**
@@ -37,13 +37,13 @@ public class OSCoapStack extends CoapStack{
         // make sure the endpoint sets a MessageDeliverer
     }
 
-    public void sendRequest(Request request, OSTidDB db) {
+    public void sendRequest(Request request, CryptoContextDB db) {
         ((OSStackTopAdapter)top).sendRequest(request, db);
     }
 
     protected class OSStackTopAdapter extends CoapStack.StackTopAdapter{
 
-        public void sendRequest(Request request, OSTidDB db) {
+        public void sendRequest(Request request, CryptoContextDB db) {
             Exchange exchange = new Exchange(request, Exchange.Origin.LOCAL);
             exchange.setCryptographicContextDB(db);
             sendRequest(exchange, request); // layer method

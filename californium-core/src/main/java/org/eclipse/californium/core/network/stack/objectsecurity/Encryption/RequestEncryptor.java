@@ -7,7 +7,7 @@ import COSE.HeaderKeys;
 import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContext;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
@@ -17,7 +17,7 @@ public class RequestEncryptor extends Encryptor {
 
     Request request;
 
-    public RequestEncryptor(Request request, OSTid tid){
+    public RequestEncryptor(Request request, CryptoContext tid){
         this.tid = tid;
         this.request = request;
     }
@@ -48,7 +48,7 @@ public class RequestEncryptor extends Encryptor {
     }
 
 
-    private Encrypt0Message prepareCOSEStructure(byte[] confidential, byte[] aad, OSTid tid) {
+    private Encrypt0Message prepareCOSEStructure(byte[] confidential, byte[] aad, CryptoContext tid) {
         Encrypt0Message enc = new Encrypt0Message();
         enc.SetContent(confidential);
         enc.setExternal(aad);

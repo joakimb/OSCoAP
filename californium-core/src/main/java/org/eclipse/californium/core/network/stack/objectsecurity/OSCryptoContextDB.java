@@ -11,28 +11,28 @@ import java.util.HashMap;
 /**
  * Created by joakim on 2016-03-03.
  */
-public class OSHashMapTIDDB implements OSTidDB {
+public class OSCryptoContextDB implements CryptoContextDB {
 
-    static OSHashMapTIDDB db;
-    HashMap<Cid, OSTid> cidMap;
-    HashMap<String, OSTid> uriMap;
+    static OSCryptoContextDB db;
+    HashMap<Cid, CryptoContext> cidMap;
+    HashMap<String, CryptoContext> uriMap;
 
-    public static OSHashMapTIDDB getDB(){
-        if(db == null) db = new OSHashMapTIDDB();
+    public static OSCryptoContextDB getDB(){
+        if(db == null) db = new OSCryptoContextDB();
         return db;
     }
 
-    public OSHashMapTIDDB(){
-        uriMap = new HashMap<String, OSTid>();
-        cidMap = new HashMap<Cid, OSTid>();
+    public OSCryptoContextDB(){
+        uriMap = new HashMap<String, CryptoContext>();
+        cidMap = new HashMap<Cid, CryptoContext>();
     }
 
     @Override
-    public OSTid getTID(byte[] cid) {
+    public CryptoContext getContext(byte[] cid) {
         return cidMap.get(new Cid(cid));
     }
     @Override
-    public OSTid getTID(String uri) throws OSTIDException {
+    public CryptoContext getContext(String uri) throws OSTIDException {
         uri = normalizeServerUri(uri);
         return uriMap.get(uri);
     }
@@ -48,7 +48,7 @@ public class OSHashMapTIDDB implements OSTidDB {
     }
 
     @Override
-    public void addTid(byte[] cid, String uri, OSTid tidObj) throws OSTIDException {
+    public void addContext(byte[] cid, String uri, CryptoContext tidObj) throws OSTIDException {
         uriMap.put(normalizeServerUri(uri), tidObj);
         cidMap.put(new Cid(cid),tidObj);
     }

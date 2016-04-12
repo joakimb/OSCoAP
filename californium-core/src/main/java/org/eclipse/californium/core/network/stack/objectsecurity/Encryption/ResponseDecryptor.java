@@ -16,13 +16,13 @@ public class ResponseDecryptor extends Decryptor {
 
     Response response;
     byte[] seq;
-    OSTid tid;
+    CryptoContext tid;
 
     public ResponseDecryptor(Response response){
         this.response = response;
     }
 
-    public void decrypt(OSTid tid){
+    public void decrypt(CryptoContext tid){
         collectData(response);
         this.tid = tid;
         Encrypt0Message enc = prepareCOSEStructure();
@@ -49,12 +49,12 @@ public class ResponseDecryptor extends Decryptor {
     }
 
     @Override
-    protected byte[] serializeAAD(OSTid tid) {
+    protected byte[] serializeAAD(CryptoContext tid) {
         return OSSerializer.serializeReceiveResponseAdditionalAuthenticatedData(response.getCode().value, tid, seq);
     }
 
     @Override
-    protected OSTid getTid() throws OSException {
+    protected CryptoContext getTid() throws OSException {
         return tid;
     }
 }

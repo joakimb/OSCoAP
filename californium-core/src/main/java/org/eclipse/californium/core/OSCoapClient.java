@@ -6,7 +6,7 @@ import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.OSCoapEndpoint;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTidDB;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContextDB;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,7 +15,7 @@ import java.net.URI;
  * Created by joakim on 12/04/16.
  */
 public class OSCoapClient extends CoapClient {
-    OSTidDB db;
+    CryptoContextDB db;
 
     private OSCoapEndpoint newEndpoint(){
         OSCoapEndpoint ep = new OSCoapEndpoint();
@@ -31,7 +31,7 @@ public class OSCoapClient extends CoapClient {
     /**
      * Constructs a new CoapClient that has no destination URI yet.
      */
-    public OSCoapClient(OSTidDB db) {
+    public OSCoapClient(CryptoContextDB db) {
         super();
         this.db = db;
         setEndpoint(newEndpoint());
@@ -42,7 +42,7 @@ public class OSCoapClient extends CoapClient {
      *
      * @param uri the uri
      */
-    public OSCoapClient(String uri, OSTidDB db) {
+    public OSCoapClient(String uri, CryptoContextDB db) {
         super(uri);
         this.db = db;
         setEndpoint(newEndpoint());
@@ -53,7 +53,7 @@ public class OSCoapClient extends CoapClient {
      *
      * @param uri the uri
      */
-    public OSCoapClient(URI uri, OSTidDB db) {
+    public OSCoapClient(URI uri, CryptoContextDB db) {
         super(uri);
         this.db = db;
         setEndpoint(newEndpoint());
@@ -68,7 +68,7 @@ public class OSCoapClient extends CoapClient {
      * @param port the port
      * @param path the path
      */
-    public OSCoapClient(OSTidDB db, String scheme, String host, int port, String... path) {
+    public OSCoapClient(CryptoContextDB db, String scheme, String host, int port, String... path) {
         super(scheme, host, port, path);
         this.db = db;
         setEndpoint(newEndpoint());

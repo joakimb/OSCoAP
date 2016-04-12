@@ -1,10 +1,7 @@
 package org.eclipse.californium.core.network.stack.objectsecurity.Encryption;
 
-import COSE.CoseException;
 import COSE.Encrypt0Message;
 import COSE.HeaderKeys;
-import com.upokecenter.cbor.CBORObject;
-import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
@@ -63,17 +60,17 @@ public class RequestDecryptor extends Decryptor {
     }
 
     @Override
-    protected OSTid getTid() throws OSException {
+    protected CryptoContext getTid() throws OSException {
         if (enc == null) {
             throw new OSException("enc not initialized");
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
-        OSTid tid = OSHashMapTIDDB.getDB().getTID(cid);
+        CryptoContext tid = OSCryptoContextDB.getDB().getContext(cid);
         return tid;
     }
 
     @Override
-    protected byte[] serializeAAD(OSTid tid) {
+    protected byte[] serializeAAD(CryptoContext tid) {
         return OSSerializer.serializeRequestAdditionalAuthenticatedData(request.getCode().value, tid, request.getURI());
     }
 }

@@ -3,8 +3,8 @@ package org.eclipse.californium.core.network.stack.objectsecurity.Encryption;
 import COSE.CoseException;
 import COSE.Encrypt0Message;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContext;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
-import org.eclipse.californium.core.network.stack.objectsecurity.OSTid;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
@@ -13,7 +13,7 @@ import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OS
 public class ResponseEncryptor extends Encryptor{
     Response response;
 
-    public ResponseEncryptor(Response response, OSTid tid){
+    public ResponseEncryptor(Response response, CryptoContext tid){
         this.tid = tid;
         this.response = response;
     }
@@ -43,7 +43,7 @@ public class ResponseEncryptor extends Encryptor{
     }
 
 
-    private Encrypt0Message prepareCOSEStructure(byte[] confidential, byte[] aad, OSTid tid) {
+    private Encrypt0Message prepareCOSEStructure(byte[] confidential, byte[] aad, CryptoContext tid) {
         Encrypt0Message enc = new Encrypt0Message();
         enc.SetContent(confidential);
         enc.setExternal(aad);
