@@ -4,10 +4,7 @@ import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.coap.OptionNumberRegistry;
-import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -166,6 +163,57 @@ public class ObjectSecurityTest {
         }
     }
 
+    private byte[] sendRequest(String uri, OSTidDB tidDB) {
+        OSTid tid = null;
+        try {
+            tid = tidDB.getTID(uri);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        Request request = Request.newPost().setURI("coap://localhost:5683");
+        request.setType(CoAP.Type.CON);
+        request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
+        try {
+            osLayer.prepareSend(request, tid);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        return tid.getCid();
+    }
+
+    private Request receiveRequest(Request request){
+        try {
+            osLayer.prepareReceive(request);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        return request;
+    }
+
+    private Response sendResponse(Request request, String responsePayload, OSTid tid){
+
+        Response response = null;
+
+        if (responsePayload == null || responsePayload.length() <= 0){
+            response = new Response(CoAP.ResponseCode.VALID);
+        } else {
+            response = new Response(CoAP.ResponseCode.CONTENT);
+            response.setPayload(responsePayload);
+		    response.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
+        }
+        try {
+            osLayer.prepareSend(response, tid);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        return response;
+    }
+
+
     @Test
     public void testSequenceNumbersReplayReject(){
         Request request = Request.newPost().setURI("coap://localhost:5683");
@@ -200,8 +248,18 @@ public class ObjectSecurityTest {
                 }
             });
             server.start();
-            String uri = "coap://localhost:5683/hello?data=world";
-            CoapClient client = new CoapClient(uri);
+        String uri = "coap://localhost:5683/hello?data=world";
+            String uri2 = "coap://localhost:5685/hello?data=world";
+         CoapServer server2 = new CoapServer(5685);
+            server2.add(new CoapResource("hello2"){
+                public void handleGET(CoapExchange exchange) {
+                    exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
+                }
+            });
+            server2.start();
+
+        CoapClient client = new CoapClient(uri);
+        CoapClient client2 = new CoapClient(uri);
             client.useObjectSecurity();
         OSTid tid = new OSTid(BigInteger.ONE);
         OSTidDB db = OSHashMapTIDDB.getDB();
@@ -214,6 +272,8 @@ public class ObjectSecurityTest {
 
 
         String content = client.get().getResponseText();
+
+        String content2 = client2.get().getResponseText();
 
             System.out.println("RESPONSE: " + content);
         //assertArrayEquals(content, new byte[4]);
