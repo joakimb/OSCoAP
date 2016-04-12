@@ -17,7 +17,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     CryptoContextDB db;
 
     public ObjectSecurityLayer(){
-        db = OSCryptoContextDB.getDB();
+        db = HashMapCryptoContextDB.getDB();
     }
 
     public Request prepareSend(Request message, CryptoContext tid) throws OSTIDException {

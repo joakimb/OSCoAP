@@ -11,18 +11,18 @@ import java.util.HashMap;
 /**
  * Created by joakim on 2016-03-03.
  */
-public class OSCryptoContextDB implements CryptoContextDB {
+public class HashMapCryptoContextDB implements CryptoContextDB {
 
-    static OSCryptoContextDB db;
+    static HashMapCryptoContextDB db;
     HashMap<Cid, CryptoContext> cidMap;
     HashMap<String, CryptoContext> uriMap;
 
-    public static OSCryptoContextDB getDB(){
-        if(db == null) db = new OSCryptoContextDB();
+    public static HashMapCryptoContextDB getDB(){
+        if(db == null) db = new HashMapCryptoContextDB();
         return db;
     }
 
-    public OSCryptoContextDB(){
+    public HashMapCryptoContextDB(){
         uriMap = new HashMap<String, CryptoContext>();
         cidMap = new HashMap<Cid, CryptoContext>();
     }

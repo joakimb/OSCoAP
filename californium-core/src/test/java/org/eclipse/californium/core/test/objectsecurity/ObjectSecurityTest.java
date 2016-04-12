@@ -32,7 +32,7 @@ public class ObjectSecurityTest {
     public void setup() {
         System.out.println("\nStart "+getClass().getSimpleName());
         osLayer = new ObjectSecurityLayer();
-        db = OSCryptoContextDB.getDB();
+        db = HashMapCryptoContextDB.getDB();
         byte[] cidA = BigInteger.ONE.toByteArray();
         byte[] cidB = (new BigInteger("2")).toByteArray();
         CryptoContext tidA = new CryptoContext(BigInteger.ONE);
@@ -262,7 +262,7 @@ public class ObjectSecurityTest {
         OSCoapClient client = new OSCoapClient(uri, db);
         OSCoapClient client2 = new OSCoapClient(uri, db);
         CryptoContext tid = new CryptoContext(BigInteger.ONE);
-        CryptoContextDB db = OSCryptoContextDB.getDB();
+        CryptoContextDB db = HashMapCryptoContextDB.getDB();
         try {
             db.addContext(tid.getCid(), uri, tid);
         } catch (OSTIDException e) {

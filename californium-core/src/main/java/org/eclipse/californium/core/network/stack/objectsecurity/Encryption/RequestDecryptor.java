@@ -65,7 +65,7 @@ public class RequestDecryptor extends Decryptor {
             throw new OSException("enc not initialized");
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
-        CryptoContext tid = OSCryptoContextDB.getDB().getContext(cid);
+        CryptoContext tid = HashMapCryptoContextDB.getDB().getContext(cid);
         return tid;
     }
 
