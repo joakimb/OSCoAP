@@ -13,15 +13,15 @@ import java.util.HashMap;
  */
 public class HashMapCryptoContextDB implements CryptoContextDB {
 
-    static HashMapCryptoContextDB db;
+    //static HashMapCryptoContextDB db;
     HashMap<Cid, CryptoContext> cidMap;
     HashMap<String, CryptoContext> uriMap;
-
+    /*
     public static HashMapCryptoContextDB getDB(){
         if(db == null) db = new HashMapCryptoContextDB();
         return db;
     }
-
+    */
     public HashMapCryptoContextDB(){
         uriMap = new HashMap<String, CryptoContext>();
         cidMap = new HashMap<Cid, CryptoContext>();

@@ -33,9 +33,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
-    public byte[] prepareReceive(Request request) throws OSTIDException {
+    public byte[] prepareReceive(Request request, CryptoContextDB db) throws OSTIDException {
 
-        RequestDecryptor decryptor = new RequestDecryptor(request);
+        RequestDecryptor decryptor = new RequestDecryptor(db, request);
         return decryptor.decrypt();
 
     }
@@ -98,7 +98,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
         if (isProtected(request)) {
             byte[] cid = null;
             try {
-                cid = prepareReceive(request);
+                cid = prepareReceive(request, exchange.getCryptographicContextDB());
             } catch (OSTIDException e) {
                 //TODO fail gracefully
                 e.printStackTrace();

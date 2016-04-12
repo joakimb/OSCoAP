@@ -16,9 +16,11 @@ public class RequestDecryptor extends Decryptor {
 
     Request request;
     Encrypt0Message enc;
+    CryptoContextDB db;
 
-    public RequestDecryptor(Request request) {
+    public RequestDecryptor(CryptoContextDB db, Request request) {
         this.request = request;
+        this.db = db;
     }
 
     public byte[] decrypt() {
@@ -65,7 +67,7 @@ public class RequestDecryptor extends Decryptor {
             throw new OSException("enc not initialized");
         }
         byte[] cid = (enc.findAttribute(HeaderKeys.KID)).GetByteString();
-        CryptoContext tid = HashMapCryptoContextDB.getDB().getContext(cid);
+        CryptoContext tid = db.getContext(cid);
         return tid;
     }
 

@@ -23,20 +23,22 @@ import static org.junit.Assert.*;
 public class ObjectSecurityTest {
 
     ObjectSecurityLayer osLayer;
-    CryptoContextDB db;
+    CryptoContextDB serverDBA;
+    CryptoContextDB clientDBA;
 
     @Before
     public void setup() {
         System.out.println("\nStart "+getClass().getSimpleName());
         osLayer = new ObjectSecurityLayer();
-        db = HashMapCryptoContextDB.getDB();
+        serverDBA = new HashMapCryptoContextDB();
+        clientDBA = new HashMapCryptoContextDB();
         byte[] cidA = BigInteger.ONE.toByteArray();
-        byte[] cidB = (new BigInteger("2")).toByteArray();
-        CryptoContext tidA = new CryptoContext(BigInteger.ONE);
-        CryptoContext tidB = new CryptoContext(new BigInteger("2"));
+        byte[] cidB = BigInteger.ONE.toByteArray();
+        CryptoContext serverContextA = new CryptoContext(BigInteger.ONE);
+        CryptoContext clientContextA = new CryptoContext(BigInteger.ONE);
         try {
-            db.addContext(cidA, "coap://localhost/", tidA);
-            //db.addContext(cidB, "coap://localhost/", tidB);
+            serverDBA.addContext(cidA, "coap://localhost/", serverContextA);
+            clientDBA.addContext(cidB, "coap://localhost/", clientContextA);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);
@@ -57,7 +59,7 @@ public class ObjectSecurityTest {
         request.setType(CoAP.Type.CON);
 		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         try {
-                osLayer.prepareSend(request, db.getContext("coap://localhost:5683"));
+                osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -83,14 +85,14 @@ public class ObjectSecurityTest {
 		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         assertEquals(2,request.getOptions().getLocationPathCount());
         try {
-            osLayer.prepareSend(request, db.getContext("coap://localhost:5683"));
+            osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
         assertEquals(0,request.getOptions().getLocationPathCount());
         try {
-            osLayer.prepareReceive(request);
+            osLayer.prepareReceive(request, serverDBA);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -106,14 +108,14 @@ public class ObjectSecurityTest {
         request.setPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
         try {
-            osLayer.prepareSend(request, db.getContext("coap://localhost:5683"));
+            osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
         assertFalse("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
         try {
-            osLayer.prepareReceive(request);
+            osLayer.prepareReceive(request, serverDBA);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -127,7 +129,7 @@ public class ObjectSecurityTest {
     }
 
     @Test
-    public void testSequenceNumbersIncreasing(){
+    public void testClientSequenceNumbersIncreasing(){
         List<Request> requests = new ArrayList<>();
         for (int i  = 0; i < 100; i++){
             Request request = Request.newPost().setURI("coap://localhost:5683");
@@ -138,13 +140,13 @@ public class ObjectSecurityTest {
         int clientSeq = 0;
         for (Request request : requests) {
             try {
-                osLayer.prepareSend(request, db.getContext("coap://localhost:5683"));
+                osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
             } catch (OSTIDException e) {
                 e.printStackTrace();
                 assertTrue(false);
             }
             try {
-                osLayer.prepareReceive(request);
+                osLayer.prepareReceive(request, serverDBA);
             } catch (OSTIDException e) {
                 e.printStackTrace();
                 assertTrue(false);
@@ -153,8 +155,8 @@ public class ObjectSecurityTest {
         }
 
         try{
-            assertArrayEquals("senderSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getContext("coap://localhost:5683").getSenderSeq());
-            assertArrayEquals("receiverSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), db.getContext("coap://localhost:5683").getSenderSeq());
+            assertArrayEquals("clientSenderSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), clientDBA.getContext("coap://localhost:5683").getSenderSeq());
+            assertArrayEquals("clientReceiverSeq not correct", (new BigInteger(String.valueOf(clientSeq))).toByteArray(), clientDBA.getContext("coap://localhost:5683").getSenderSeq());
         } catch (Exception e){
             e.printStackTrace();
             assertTrue(false);
@@ -181,9 +183,9 @@ public class ObjectSecurityTest {
         return tid.getCid();
     }
 
-    private Request receiveRequest(Request request){
+    private Request receiveRequest(Request request, CryptoContextDB db){
         try {
-            osLayer.prepareReceive(request);
+            osLayer.prepareReceive(request, db);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -219,14 +221,14 @@ public class ObjectSecurityTest {
         request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         try {
             //sending seq 1
-            osLayer.prepareSend(request, db.getContext("coap://localhost:5683"));
+            osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
         }
         //receiving seq 1
         try {
-            osLayer.prepareReceive(request);
+            osLayer.prepareReceive(request, serverDBA);
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -239,7 +241,7 @@ public class ObjectSecurityTest {
     @Test
     public void devtest(){
        //from californium examples
-            OSCoapServer server = new OSCoapServer(db, 5683);
+            OSCoapServer server = new OSCoapServer(serverDBA, 5683);
             server.add(new CoapResource("hello"){
                 public void handleGET(CoapExchange exchange) {
                     exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
@@ -247,6 +249,7 @@ public class ObjectSecurityTest {
             });
             server.start();
         String uri = "coap://localhost:5683/hello?data=world";
+        /*
             String uri2 = "coap://localhost:5685/hello?data=world";
          OSCoapServer server2 = new OSCoapServer(db, 5685);
             server2.add(new CoapResource("hello2"){
@@ -255,13 +258,14 @@ public class ObjectSecurityTest {
                 }
             });
             server2.start();
-
-        OSCoapClient client = new OSCoapClient(uri, db);
-        OSCoapClient client2 = new OSCoapClient(uri, db);
+*/
+        OSCoapClient client = new OSCoapClient(uri, clientDBA);
+ //       OSCoapClient client2 = new OSCoapClient(uri, db);
         CryptoContext tid = new CryptoContext(BigInteger.ONE);
-        CryptoContextDB db = HashMapCryptoContextDB.getDB();
+        //CryptoContextDB db = HashMapCryptoContextDB.getDB();
         try {
-            db.addContext(tid.getCid(), uri, tid);
+            clientDBA.addContext(tid.getCid(), uri, tid);
+            serverDBA.addContext(tid.getCid(), uri, tid);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);
@@ -270,7 +274,7 @@ public class ObjectSecurityTest {
 
         String content = client.get().getResponseText();
 
-        String content2 = client2.get().getResponseText();
+        //String content2 = client2.get().getResponseText();
 
             System.out.println("RESPONSE: " + content);
         //assertArrayEquals(content, new byte[4]);
