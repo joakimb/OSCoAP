@@ -55,9 +55,9 @@ public class CoapClient {
 	private String uri;
 	
 	/** The type used for requests (CON is default) */
-	private Type type = Type.CON;
+	protected Type type = Type.CON;
 	
-	private int blockwise = 0;
+	protected int blockwise = 0;
 	
 	/** The client-specific executor service. */
 	private ExecutorService executor;

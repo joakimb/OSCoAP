@@ -4,6 +4,7 @@ import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.OSCoapClient;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;

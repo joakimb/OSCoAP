@@ -115,13 +115,13 @@ public class CoapEndpoint implements Endpoint {
 	private final static Logger LOGGER = Logger.getLogger(CoapEndpoint.class.getCanonicalName());
 	
 	/** The stack of layers that make up the CoAP protocol */
-	private final CoapStack coapstack;
+	protected CoapStack coapstack;
 	
 	/** The connector over which the endpoint connects to the network */
 	private final Connector connector;
 	
 	/** The configuration of this endpoint */
-	private final NetworkConfig config;
+	protected final NetworkConfig config;
 	
 	/** The executor to run tasks for this endpoint and its layers */
 	private ScheduledExecutorService executor;
@@ -451,7 +451,7 @@ public class CoapEndpoint implements Endpoint {
 	 * will then give them to the matcher, the interceptors, and finally send
 	 * them over the connector.
 	 */
-	private class OutboxImpl implements Outbox {
+	protected class OutboxImpl implements Outbox {
 		
 		@Override
 		public void sendRequest(Exchange exchange, Request request) {
@@ -688,7 +688,7 @@ public class CoapEndpoint implements Endpoint {
 	 *
 	 * @param task the task
 	 */
-	private void runInProtocolStage(final Runnable task) {
+	protected void runInProtocolStage(final Runnable task) {
 		executor.execute(new Runnable() {
 			public void run() {
 				try {

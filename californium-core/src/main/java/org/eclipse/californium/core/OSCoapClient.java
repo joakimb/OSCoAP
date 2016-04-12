@@ -1,11 +1,14 @@
-package org.eclipse.californium.core.network.stack.objectsecurity;
+package org.eclipse.californium.core;
 
-import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.coap.BlockOption;
 import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.OSCoapEndpoint;
+import org.eclipse.californium.core.network.stack.objectsecurity.OSTidDB;
 
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -14,12 +17,24 @@ import java.net.URI;
 public class OSCoapClient extends CoapClient {
     OSTidDB db;
 
+    private OSCoapEndpoint newEndpoint(){
+        OSCoapEndpoint ep = new OSCoapEndpoint();
+
+        try {
+            ep.start();
+        } catch (IOException e) {
+            System.out.println("Could not create endpoint");
+        }
+        return ep;
+    }
+
     /**
      * Constructs a new CoapClient that has no destination URI yet.
      */
     public OSCoapClient(OSTidDB db) {
         super();
         this.db = db;
+        setEndpoint(newEndpoint());
     }
 
     /**
@@ -30,6 +45,7 @@ public class OSCoapClient extends CoapClient {
     public OSCoapClient(String uri, OSTidDB db) {
         super(uri);
         this.db = db;
+        setEndpoint(newEndpoint());
     }
 
     /**
@@ -40,6 +56,7 @@ public class OSCoapClient extends CoapClient {
     public OSCoapClient(URI uri, OSTidDB db) {
         super(uri);
         this.db = db;
+        setEndpoint(newEndpoint());
     }
 
     /**
@@ -54,6 +71,7 @@ public class OSCoapClient extends CoapClient {
     public OSCoapClient(OSTidDB db, String scheme, String host, int port, String... path) {
         super(scheme, host, port, path);
         this.db = db;
+        setEndpoint(newEndpoint());
     }
 
 
@@ -66,8 +84,18 @@ public class OSCoapClient extends CoapClient {
      */
     @Override
     protected Request send(Request request, Endpoint outEndpoint) {
+        OSCoapEndpoint ep = (OSCoapEndpoint) outEndpoint;
+
         request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
-        return super.send(request,outEndpoint);
+        // use the specified message type
+        request.setType(super.type);
+
+        if (blockwise!=0) {
+            request.getOptions().setBlock2(new BlockOption(BlockOption.size2Szx(this.blockwise), false, 0));
+        }
+
+        ep.sendRequest(request, db);
+        return request;
     }
 
 }

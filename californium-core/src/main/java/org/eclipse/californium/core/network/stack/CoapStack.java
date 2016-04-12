@@ -81,11 +81,13 @@ public class CoapStack {
 	/** The LOGGER. */
 	final static Logger LOGGER = Logger.getLogger(CoapStack.class.getCanonicalName());
 
-	private List<Layer> layers;
-	private Outbox outbox;
-	private StackTopAdapter top;
-	private StackBottomAdapter bottom;
+	protected List<Layer> layers;
+	protected Outbox outbox;
+	protected StackTopAdapter top;
+	protected StackBottomAdapter bottom;
 	private MessageDeliverer deliverer;
+
+	protected CoapStack(){}
 	
 	public CoapStack(NetworkConfig config, Outbox outbox) {
 		this.top = new StackTopAdapter();
@@ -156,7 +158,7 @@ public class CoapStack {
 			layer.destroy();
 	}
 
-	private class StackTopAdapter extends AbstractLayer {
+	protected class StackTopAdapter extends AbstractLayer {
 		
 		public void sendRequest(Request request) {
 			Exchange exchange = new Exchange(request, Origin.LOCAL);
@@ -204,7 +206,7 @@ public class CoapStack {
 		}
 	}
 	
-	private class StackBottomAdapter extends AbstractLayer {
+	protected class StackBottomAdapter extends AbstractLayer {
 	
 		@Override
 		public void sendRequest(Exchange exchange, Request request) {
