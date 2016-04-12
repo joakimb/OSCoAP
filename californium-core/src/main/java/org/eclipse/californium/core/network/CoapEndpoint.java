@@ -136,7 +136,7 @@ public class CoapEndpoint implements Endpoint {
 	private List<MessageInterceptor> interceptors = new ArrayList<MessageInterceptor>(0);
 
 	/** The matcher which matches incoming responses, akcs and rsts an exchange */
-	private Matcher matcher;
+	protected Matcher matcher;
 	
 	/** The serializer to serialize messages to bytes */
 	private Serializer serializer;

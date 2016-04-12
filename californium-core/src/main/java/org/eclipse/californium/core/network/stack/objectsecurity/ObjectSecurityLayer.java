@@ -14,11 +14,11 @@ import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OS
  */
 public class ObjectSecurityLayer extends AbstractLayer {
 
-    CryptoContextDB db;
+    //CryptoContextDB db;
 
-    public ObjectSecurityLayer(){
-        db = HashMapCryptoContextDB.getDB();
-    }
+    //public ObjectSecurityLayer(){
+     //   db = HashMapCryptoContextDB.getDB();
+    //}
 
     public Request prepareSend(Request message, CryptoContext tid) throws OSTIDException {
 
@@ -76,7 +76,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
             response.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
 
             try {
-                CryptoContext tid = db.getContext(exchange.getCryptgraphicContextID());
+                CryptoContext tid = exchange.getCryptographicContextDB().getContext(exchange.getCryptgraphicContextID());
                 prepareSend(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully

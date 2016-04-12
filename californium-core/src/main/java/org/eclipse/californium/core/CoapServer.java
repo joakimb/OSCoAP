@@ -99,7 +99,7 @@ public class CoapServer implements ServerInterface {
 	private MessageDeliverer deliverer;
 	
 	/** The list of endpoints the server connects to the network. */
-	private final List<Endpoint> endpoints;
+	protected List<Endpoint> endpoints;
 	
 	/** The executor of the server for its endpoints (can be null). */
 	private ScheduledExecutorService executor;

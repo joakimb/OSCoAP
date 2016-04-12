@@ -1,10 +1,7 @@
 package org.eclipse.californium.core.test.objectsecurity;
 
 import com.upokecenter.cbor.CBORObject;
-import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.OSCoapClient;
+import org.eclipse.californium.core.*;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
@@ -242,7 +239,7 @@ public class ObjectSecurityTest {
     @Test
     public void devtest(){
        //from californium examples
-            CoapServer server = new CoapServer(5683);
+            OSCoapServer server = new OSCoapServer(db, 5683);
             server.add(new CoapResource("hello"){
                 public void handleGET(CoapExchange exchange) {
                     exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
@@ -251,7 +248,7 @@ public class ObjectSecurityTest {
             server.start();
         String uri = "coap://localhost:5683/hello?data=world";
             String uri2 = "coap://localhost:5685/hello?data=world";
-         CoapServer server2 = new CoapServer(5685);
+         OSCoapServer server2 = new OSCoapServer(db, 5685);
             server2.add(new CoapResource("hello2"){
                 public void handleGET(CoapExchange exchange) {
                     exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
