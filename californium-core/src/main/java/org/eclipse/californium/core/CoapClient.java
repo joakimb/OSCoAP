@@ -28,8 +28,14 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.californium.core.coap.*;
+import org.eclipse.californium.core.coap.BlockOption;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.core.coap.LinkFormat;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -50,10 +56,7 @@ public class CoapClient {
 	
 	/** The type used for requests (CON is default) */
 	private Type type = Type.CON;
-
-	/** Condition for incuding object security*/
-	private boolean objectSecurity = false;
-
+	
 	private int blockwise = 0;
 	
 	/** The client-specific executor service. */
@@ -254,15 +257,6 @@ public class CoapClient {
 		return this;
 	}
 
-	/**
-	 * Use the object security option
-	 *
-	 * @return the CoAP client
-	 */
-	public CoapClient useObjectSecurity(){
-		this.objectSecurity = true;
-		return this;
-	}
 	/**
 	 * Performs a CoAP ping using the default timeout for requests.
 	 * 
@@ -893,12 +887,6 @@ public class CoapClient {
 	 * @return the request
 	 */
 	protected Request send(Request request, Endpoint outEndpoint) {
-
-		//check if object security should be used
-		if (this.objectSecurity){
-			request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
-		}
-
 		// use the specified message type
 		request.setType(this.type);
 
