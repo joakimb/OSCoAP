@@ -7,6 +7,7 @@ import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.Requ
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.RequestEncryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseDecryptor;
 import org.eclipse.californium.core.network.stack.objectsecurity.Encryption.ResponseEncryptor;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
@@ -33,14 +34,14 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     }
 
-    public byte[] prepareReceive(Request request, CryptoContextDB db) throws OSTIDException {
+    public byte[] prepareReceive(Request request, CryptoContextDB db) throws OSTIDException, OSSequenceNumberException {
 
         RequestDecryptor decryptor = new RequestDecryptor(db, request);
         return decryptor.decrypt();
 
     }
 
-    public void prepareReceive(Response response, CryptoContext tid) throws OSTIDException {
+    public void prepareReceive(Response response, CryptoContext tid) throws OSTIDException, OSSequenceNumberException {
 
         ResponseDecryptor decryptor = new ResponseDecryptor(response);
         decryptor.decrypt(tid);
@@ -103,6 +104,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 //TODO fail gracefully
                 e.printStackTrace();
                 System.exit(1);
+            } catch (OSSequenceNumberException e) {
+                e.printStackTrace();
+                System.exit(1);
             }
             exchange.setCryptographicContextID(cid);
         }
@@ -117,6 +121,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 prepareReceive(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully
+                e.printStackTrace();
+                System.exit(1);
+            } catch (OSSequenceNumberException e) {
                 e.printStackTrace();
                 System.exit(1);
             }

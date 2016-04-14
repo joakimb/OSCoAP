@@ -23,7 +23,7 @@ public class RequestDecryptor extends Decryptor {
         this.db = db;
     }
 
-    public byte[] decrypt() {
+    public byte[] decrypt() throws OSSequenceNumberException {
 
 
         //TODO check seq validity
@@ -33,10 +33,6 @@ public class RequestDecryptor extends Decryptor {
         byte[] content = new byte[0];
         try {
             content = decryptAndDecode(enc);
-
-        } catch (OSSequenceNumberException e) {
-            e.printStackTrace();
-            System.exit(1);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);

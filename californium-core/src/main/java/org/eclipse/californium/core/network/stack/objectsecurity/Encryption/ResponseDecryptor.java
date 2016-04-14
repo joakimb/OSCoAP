@@ -22,7 +22,7 @@ public class ResponseDecryptor extends Decryptor {
         this.response = response;
     }
 
-    public void decrypt(CryptoContext tid){
+    public void decrypt(CryptoContext tid) throws OSSequenceNumberException {
         collectData(response);
         this.tid = tid;
         Encrypt0Message enc = prepareCOSEStructure();
@@ -31,9 +31,6 @@ public class ResponseDecryptor extends Decryptor {
         try {
             content = decryptAndDecode(enc);
 
-        } catch (OSSequenceNumberException e) {
-            e.printStackTrace();
-            System.exit(1);
         } catch (OSException e) {
             e.printStackTrace();
             System.exit(1);
