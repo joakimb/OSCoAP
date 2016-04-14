@@ -26,6 +26,9 @@ public class ObjectSecurityTest {
     CryptoContextDB serverDBA;
     CryptoContextDB clientDBA;
 
+    /**
+     * Sets up one CryptoContext database for a server and one for a client. Also sets up a ObjectSecuritylayer.
+     */
     @Before
     public void setup() {
         System.out.println("\nStart "+getClass().getSimpleName());
@@ -51,12 +54,11 @@ public class ObjectSecurityTest {
     }
 
     /**
-     * Tests that the encrypted option is a valid CBOR object
+     * Tests that the encrypted option is a valid CBOR object after encryption of message without payload.
      */
     @Test
     public void testEncryptedNoOptionsNoPayload(){
         Request request = Request.newGet().setURI("coap://localhost:5683");
-        request.setType(CoAP.Type.CON);
 		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         try {
                 osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
@@ -71,16 +73,17 @@ public class ObjectSecurityTest {
         assertTrue(cbor.get("noCacheKey").isFalse());
         assertTrue(cbor.get("critical").isTrue());
         assertTrue(cbor.get("unSafe").isFalse());
-        assertTrue(cbor.get("number").AsInt64() == 21);
+        assertTrue(cbor.get("number").AsInt64() == OptionNumberRegistry.OBJECT_SECURITY);
     }
 
+
     /**
-     * Tests that protected options are moved to OSOption-value
+     * Tests that protected options are encrypted and moved to OSOption-value
+     * after encryption and restored after decryption.
      */
     @Test
-    public void testDecryptPayloadInOption(){
+    public void testEncryptDecryptOptions(){
         Request request = Request.newGet().setURI("coap://localhost:5683");
-        request.setType(CoAP.Type.CON);
         request.getOptions().setLocationPath("/test/path");
 		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         assertEquals(2,request.getOptions().getLocationPathCount());
@@ -100,10 +103,12 @@ public class ObjectSecurityTest {
         assertEquals(2,request.getOptions().getLocationPathCount());
     }
 
+    /**
+     * Tests that message payload is replaced by object security option payload.
+     */
     @Test
-    public void testDecryptPayloadInPayload(){
+    public void testsEncryptDecryptPayloadInPayload(){
         Request request = Request.newPost().setURI("coap://localhost:5683");
-        request.setType(CoAP.Type.CON);
 		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         request.setPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
@@ -114,6 +119,8 @@ public class ObjectSecurityTest {
             assertTrue(false);
         }
         assertFalse("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
+        assertEquals("should be only 1 option (Object Security)", 1, request.getOptions().asSortedList().size());
+        assertEquals("option payload not moved to message", 0, OptionJuggle.filterOSOption(request.getOptions()).getLength());
         try {
             osLayer.prepareReceive(request, serverDBA);
         } catch (OSTIDException e) {
@@ -123,11 +130,10 @@ public class ObjectSecurityTest {
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
     }
 
-    @Test
-    public void testOptionsMovedToOSOption(){
-        //also test proxy-uri censoring
-    }
 
+    /**
+     * Test
+     */
     @Test
     public void testClientSequenceNumbersIncreasing(){
         List<Request> requests = new ArrayList<>();
