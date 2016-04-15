@@ -5,6 +5,7 @@ import COSE.Encrypt0Message;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContext;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
@@ -18,7 +19,7 @@ public class ResponseEncryptor extends Encryptor{
         this.response = response;
     }
 
-    public Response encrypt() throws OSTIDException {
+    public Response encrypt() throws OSTIDException, OSSequenceNumberException {
 
         checkTid();
         collectData(response);

@@ -1,8 +1,11 @@
 package org.eclipse.californium.core.network.stack.objectsecurity;
 
 import COSE.AlgorithmID;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 /**
  * Created by joakim on 2016-02-23.
@@ -14,11 +17,13 @@ public class CryptoContext {
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
     private BigInteger senderSeq;    //1-8 bytes, contains the last used value
     private BigInteger receiverSeq;    //1-8 bytes, contains the last used value (max 56 bits?)
+    private BigInteger seqMax;
     private BigInteger senderSalt;
     private BigInteger receiverSalt;
     private int replayProtectionWin = 0;
     private byte[] senderKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
     private byte[] receiverKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+
 
     public CryptoContext(BigInteger cid){
         this.cid = cid;
@@ -26,6 +31,7 @@ public class CryptoContext {
         //this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
         this.senderSeq = BigInteger.ZERO;
         this.receiverSeq = BigInteger.ZERO;
+        seqMax = new BigInteger("2").pow(56).subtract(BigInteger.ONE);
     }
 
     public byte[] getSenderKey(){
@@ -60,11 +66,17 @@ public class CryptoContext {
         */ return array;
     }
 
-    public void increaseSenderSeq(){
+    public void increaseSenderSeq() throws OSSequenceNumberException {
+        if (senderSeq.compareTo(seqMax) >= 0){
+            throw new OSSequenceNumberException("sequence number too big");
+        }
         senderSeq = senderSeq.add(BigInteger.ONE);
     }
 
-    public void increaseReceiverSeq(){
+    public void increaseReceiverSeq() throws OSTIDException {
+        if (receiverSeq.compareTo(seqMax) >= 0){
+            throw new OSTIDException("sequence number too big");
+        }
         receiverSeq = receiverSeq.add(BigInteger.ONE);
     }
 
@@ -91,6 +103,10 @@ public class CryptoContext {
         return receiverSalt;
     }
 
+    public void setSeqMax(BigInteger seqMax){
+        this.seqMax = seqMax;
+    }
+
     @Override
     public boolean equals(Object o){
         if (!( o instanceof CryptoContext)) return false;
@@ -98,4 +114,9 @@ public class CryptoContext {
         return other.cid.equals(this.cid);
     }
 
+    public void checkIncomingSeq(byte[] seq) throws OSSequenceNumberException{
+        if (!Arrays.equals(seq, getReceiverSeq())) { //TODO, handle messages arriving out of order
+            throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(getReceiverSeq()).toString() + " got: " + new BigInteger(seq).toString());
+        }
+    }
 }

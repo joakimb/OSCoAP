@@ -21,14 +21,14 @@ public class ObjectSecurityLayer extends AbstractLayer {
      //   db = HashMapCryptoContextDB.getDB();
     //}
 
-    public Request prepareSend(Request message, CryptoContext tid) throws OSTIDException {
+    public Request prepareSend(Request message, CryptoContext tid) throws OSTIDException, OSSequenceNumberException {
 
         RequestEncryptor encryptor = new RequestEncryptor(message, tid);
         return encryptor.encrypt();
 
     }
 
-    public Response prepareSend(Response message, CryptoContext tid) throws OSTIDException {
+    public Response prepareSend(Response message, CryptoContext tid) throws OSTIDException, OSSequenceNumberException {
         ResponseEncryptor encryptor = new ResponseEncryptor(message, tid);
         return encryptor.encrypt();
 
@@ -63,7 +63,10 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 //TODO fail gracefully
                 e.printStackTrace();
                 System.exit(1);
-            }
+            } catch (OSSequenceNumberException e) {
+               e.printStackTrace();
+               System.exit(1);
+           }
         }
         super.sendRequest(exchange, request);
     }
@@ -81,6 +84,9 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 prepareSend(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully
+                e.printStackTrace();
+                System.exit(1);
+            } catch (OSSequenceNumberException e) {
                 e.printStackTrace();
                 System.exit(1);
             }

@@ -66,6 +66,9 @@ public class ObjectSecurityTest {
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
+        } catch (OSSequenceNumberException e) {
+            e.printStackTrace();
+            assertTrue(false);
         }
         System.out.println(request.getOptions().toString());
         CBORObject cbor = CBORObject.FromObject(OptionJuggle.filterOSOption(request.getOptions()));
@@ -91,6 +94,9 @@ public class ObjectSecurityTest {
         try {
             osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSSequenceNumberException e) {
             e.printStackTrace();
             assertTrue(false);
         }
@@ -119,6 +125,9 @@ public class ObjectSecurityTest {
         try {
             osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSSequenceNumberException e) {
             e.printStackTrace();
             assertTrue(false);
         }
@@ -152,15 +161,32 @@ public class ObjectSecurityTest {
             e.printStackTrace();
             assertTrue(false);
         }
-        Request request1 = sendRequest("coap://localhost/",clientDBA);
-        Request request2 = sendRequest("coap://localhost/",clientDBA);
+        Request request1 = null;
+        try {
+            request1 = sendRequest("coap://localhost/",clientDBA);
+            Request request2 = sendRequest("coap://localhost/",clientDBA);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSSequenceNumberException e) {
+            e.printStackTrace();
+        }
         assertTrue("seq no:s incorrect",assertCtxState(clientCtx,2, 0));
-        receiveRequest(request1, serverDBA);
-        assertTrue("seq no:s incorrect",assertCtxState(serverCtx,0, 1));
-        Response response1 = sendResponse("it is thursday, citizen", serverCtx);
-        assertTrue("seq no:s incorrect",assertCtxState(serverCtx,1, 1));
-        receiveResponse(response1, clientCtx);
-        assertTrue("seq no:s incorrect",assertCtxState(clientCtx,2, 1));
+        try {
+            receiveRequest(request1, serverDBA);
+            assertTrue("seq no:s incorrect",assertCtxState(serverCtx,0, 1));
+            Response response1 = sendResponse("it is thursday, citizen", serverCtx);
+            assertTrue("seq no:s incorrect",assertCtxState(serverCtx,1, 1));
+            receiveResponse(response1, clientCtx);
+            assertTrue("seq no:s incorrect",assertCtxState(clientCtx,2, 1));
+        } catch (OSSequenceNumberException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+
 
     }
 
@@ -181,6 +207,9 @@ public class ObjectSecurityTest {
             setup();// reset sequence number counters
             osLayer.prepareSend(request2, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSSequenceNumberException e) {
             e.printStackTrace();
             assertTrue(false);
         }
@@ -208,6 +237,9 @@ public class ObjectSecurityTest {
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
+        } catch (OSSequenceNumberException e) {
+            e.printStackTrace();
+            assertTrue(false);
         }
         detectedDuplicate = false;
         try {
@@ -221,6 +253,59 @@ public class ObjectSecurityTest {
         }
         assertTrue(detectedDuplicate);
     }
+
+    @Test
+    public void testSendSequenceNumberWrap() {
+        try {
+            clientDBA.getContext("coap://localhost:5683").setSeqMax(new BigInteger("2"));
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+        }
+
+        //Test send
+        Request req = null;
+        try {
+            sendRequest("coap://localhost:5683", clientDBA);
+            req = sendRequest("coap://localhost:5683", clientDBA);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+        } catch (OSSequenceNumberException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        boolean detectWrap = false;
+        try {
+            sendRequest("coap://localhost:5683", clientDBA);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSSequenceNumberException e) {
+            detectWrap = true;
+        }
+        assertTrue(detectWrap);
+    }
+
+    @Test
+    public void testReceiveSequenceNumberWrap() throws OSTIDException, OSSequenceNumberException {
+        try {
+            serverDBA.getContext("coap://localhost:5683").setSeqMax(new BigInteger("2"));
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+        }
+
+        sendRequest("coap://localhost:5683", clientDBA);
+        sendRequest("coap://localhost:5683", clientDBA);
+        Request req = sendRequest("coap://localhost:5683", clientDBA);
+        //Test receive
+        boolean detectWrap = true;
+        try {
+            receiveRequest(req, serverDBA);
+        } catch (OSSequenceNumberException e) {
+            detectWrap = true;
+        }
+        assertTrue(detectWrap);
+    }
+
 
     @Ignore
     @Test
@@ -293,53 +378,27 @@ public class ObjectSecurityTest {
         return value;
     }
 
-    private Request sendRequest(String uri, CryptoContextDB tidDB) {
+    private Request sendRequest(String uri, CryptoContextDB tidDB) throws OSTIDException, OSSequenceNumberException {
         CryptoContext tid = null;
-        try {
-            tid = tidDB.getContext(uri);
-        } catch (OSTIDException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
+        tid = tidDB.getContext(uri);
         Request request = Request.newPost().setURI("coap://localhost:5683");
         request.setType(CoAP.Type.CON);
         request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
-        try {
-            osLayer.prepareSend(request, tid);
-        } catch (OSTIDException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
+        osLayer.prepareSend(request, tid);
         return request;
     }
 
-    private Request receiveRequest(Request request, CryptoContextDB db){
-        try {
-            osLayer.prepareReceive(request, db);
-        } catch (OSTIDException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        } catch (OSSequenceNumberException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
+    private Request receiveRequest(Request request, CryptoContextDB db) throws OSSequenceNumberException, OSTIDException {
+        osLayer.prepareReceive(request, db);
         return request;
     }
 
-    private Response receiveResponse(Response response, CryptoContext ctx){
-        try {
-            osLayer.prepareReceive(response, ctx);
-        } catch (OSTIDException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        } catch (OSSequenceNumberException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
+    private Response receiveResponse(Response response, CryptoContext ctx) throws OSSequenceNumberException, OSTIDException {
+        osLayer.prepareReceive(response, ctx);
         return response;
     }
 
-    private Response sendResponse(String responsePayload, CryptoContext tid){
+    private Response sendResponse(String responsePayload, CryptoContext tid) throws OSTIDException, OSSequenceNumberException {
 
         Response response = null;
 
@@ -351,12 +410,7 @@ public class ObjectSecurityTest {
 		    response.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
         response.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
-        try {
-            osLayer.prepareSend(response, tid);
-        } catch (OSTIDException e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
+        osLayer.prepareSend(response, tid);
         return response;
     }
 

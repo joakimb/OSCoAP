@@ -8,6 +8,7 @@ import com.upokecenter.cbor.CBORObject;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.stack.objectsecurity.OSSerializer;
 import org.eclipse.californium.core.network.stack.objectsecurity.CryptoContext;
+import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 
 /**
@@ -22,7 +23,7 @@ public class RequestEncryptor extends Encryptor {
         this.request = request;
     }
 
-    public Request encrypt() throws OSTIDException{
+    public Request encrypt() throws OSSequenceNumberException, OSTIDException {
 
         checkTid();
         collectData(request);

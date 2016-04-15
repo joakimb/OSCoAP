@@ -29,14 +29,13 @@ public abstract class Decryptor {
 
         byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
         CryptoContext tid = getTid();
+        tid.checkIncomingSeq(seq);
         checkTid(tid);
         enc.setExternal(serializeAAD(tid));
         enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
 
 
-        if (!Arrays.equals(seq, tid.getReceiverSeq())) { //TODO, handle messages arriving out of order
-            throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(tid.getReceiverSeq()).toString() + " got: " + new BigInteger(seq).toString());
-        }
+
 
         byte[] result = null;
 
