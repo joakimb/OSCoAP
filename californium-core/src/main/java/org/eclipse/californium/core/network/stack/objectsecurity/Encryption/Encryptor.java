@@ -32,6 +32,7 @@ public abstract class Encryptor {
             enc.encrypt(key);
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
+            System.exit(0);
         }
         return enc.EncodeToBytes();
     }

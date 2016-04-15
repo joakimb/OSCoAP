@@ -45,6 +45,7 @@ public class CryptoContext {
     }
 
     public byte[] getSenderSeq(){
+
         byte[] array = senderSeq.toByteArray();
         /*
         //remove leading zeroes

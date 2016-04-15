@@ -49,6 +49,7 @@ public abstract class Decryptor {
             System.exit(1);
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
+            System.exit(1);
         }
         return result;
 
