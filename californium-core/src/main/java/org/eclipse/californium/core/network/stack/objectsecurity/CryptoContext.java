@@ -17,7 +17,7 @@ public class CryptoContext {
     private BigInteger cid;  //8 bytes but java lacks support for 8 bit unsigned values
     private BigInteger senderSeq;    //1-8 bytes, contains the last used value
     private BigInteger receiverSeq;    //1-8 bytes, contains the last used value (max 56 bits?)
-    private BigInteger seqMax;
+    private BigInteger seqMax;         //2^56 - 1
     private BigInteger senderSalt;
     private BigInteger receiverSalt;
     private int replayProtectionWin = 0;
