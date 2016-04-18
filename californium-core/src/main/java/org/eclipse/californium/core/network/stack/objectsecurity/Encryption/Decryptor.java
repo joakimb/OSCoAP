@@ -28,6 +28,7 @@ public abstract class Decryptor {
 
 
         byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
+        int len = (enc.findAttribute(HeaderKeys.IV)).GetByteString().length;
         CryptoContext tid = getTid();
         tid.checkIncomingSeq(seq);
         checkTid(tid);

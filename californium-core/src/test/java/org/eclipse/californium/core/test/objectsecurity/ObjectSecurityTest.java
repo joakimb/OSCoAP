@@ -306,6 +306,32 @@ public class ObjectSecurityTest {
         assertTrue(detectWrap);
     }
 
+    @Test
+    public void testIV(){
+        CryptoContext ctx;
+        try {
+            ctx = clientDBA.getContext("coap://localhost:5683");
+            ctx.increaseSenderSeq();
+            assertArrayEquals(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, ctx.getSenderIV());
+            ctx.increaseSenderSeq();
+            assertArrayEquals(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03}, ctx.getSenderIV());
+            for (int i = 2; i < 256; i++) ctx.increaseSenderSeq();
+            assertArrayEquals(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01}, ctx.getSenderIV());
+
+            byte[] recSeq = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+            assertArrayEquals(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03}, ctx.getReceiverIV(recSeq));
+
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        } catch (OSSequenceNumberException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+
+
+    }
+
 
     @Ignore
     @Test

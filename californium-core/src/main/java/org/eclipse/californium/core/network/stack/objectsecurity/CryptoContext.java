@@ -18,8 +18,8 @@ public class CryptoContext {
     private BigInteger senderSeq;    //1-8 bytes, contains the last used value
     private BigInteger receiverSeq;    //1-8 bytes, contains the last used value (max 56 bits?)
     private BigInteger seqMax;         //2^56 - 1
-    private BigInteger senderSalt;
-    private BigInteger receiverSalt;
+    private byte[] senderSalt = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    private byte[] receiverSalt = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02};
     private int replayProtectionWin = 0;
     private byte[] senderKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
     private byte[] receiverKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
@@ -34,6 +34,29 @@ public class CryptoContext {
         seqMax = new BigInteger("2").pow(56).subtract(BigInteger.ONE);
     }
 
+    public byte[] getSenderIV(){
+        byte seq[] = getSenderSeq();
+        byte salt[] = Arrays.copyOf(senderSalt, 7);
+        return ivSeqXOR(seq,salt);
+    }
+
+    private byte[] ivSeqXOR(byte[] seq, byte[]salt){
+        byte iv[] = new byte[7];
+        int seqOffset = iv.length - seq.length;
+        System.arraycopy(seq, 0, iv, seqOffset, seq.length);
+
+        for (int i = 0; i < iv.length; i++) {
+
+            iv[i] = (byte) (((int) iv[i]) ^ ((int) salt[i]));
+        }
+        return iv;
+    }
+
+    public byte[] getReceiverIV(byte[] seq){
+        byte salt[] = Arrays.copyOf(receiverSalt, 7);
+        return ivSeqXOR(seq, salt);
+    }
+
     public byte[] getSenderKey(){
         return senderKey;
     }
@@ -43,7 +66,7 @@ public class CryptoContext {
     }
 
     public AlgorithmID getAlg() {
-        return AlgorithmID.AES_CCM_16_64_128;
+        return AlgorithmID.AES_CCM_64_64_128;
     }
     
     public byte[] getCid(){
@@ -95,13 +118,7 @@ public class CryptoContext {
         */return array;
     }
 
-    public BigInteger getSenderSalt() {
-        return senderSalt;
-    }
 
-    public BigInteger getReceiverSalt() {
-        return receiverSalt;
-    }
 
     public void setSeqMax(BigInteger seqMax){
         this.seqMax = seqMax;
