@@ -43,6 +43,7 @@ public class ResponseDecryptor extends Decryptor {
 
         byte[] payload = OSSerializer.readPayload(content);
         response.setPayload(payload);
+
     }
 
     @Override

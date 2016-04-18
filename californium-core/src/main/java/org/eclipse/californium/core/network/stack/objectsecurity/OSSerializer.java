@@ -185,7 +185,6 @@ public class OSSerializer {
     private static void writePayload(DatagramWriter writer, byte[] payload){
         //TODO test with payload
         if (payload != null && payload.length > 0) {
-            System.out.println(" PAYLOAD PRESENT");
             // if payload is present and of non-zero length, it is prefixed by
             // an one-byte Payload Marker (0xFF) which indicates the end of
             // options and the start of the payload

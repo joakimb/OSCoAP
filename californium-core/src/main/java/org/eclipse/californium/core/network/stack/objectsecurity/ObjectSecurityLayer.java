@@ -76,7 +76,6 @@ public class ObjectSecurityLayer extends AbstractLayer {
     public void sendResponse(Exchange exchange, Response response) {
 
         if(shouldProtectResponse(exchange)) {
-
             response.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
 
             try {
@@ -143,7 +142,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
     }
 
     private boolean shouldProtectResponse(Exchange exchange){
-        return exchange.getCurrentRequest().getOptions().hasOption(OptionNumberRegistry.OBJECT_SECURITY);
+        return exchange.getCryptgraphicContextID() != null;
     }
 
     private boolean shouldProtectRequest(Request request){
