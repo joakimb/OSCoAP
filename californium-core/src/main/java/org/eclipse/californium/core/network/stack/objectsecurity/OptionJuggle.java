@@ -44,6 +44,10 @@ public class OptionJuggle {
         options.clear();
         options.addOption(osOpt);
         if (hasProxyUri) {
+            int i = proxyUri.indexOf('/');
+            if (i >= 0){
+                proxyUri = proxyUri.substring(0,i);
+            }
             options.setProxyUri(proxyUri);
         }
         if (hasObserve) {
