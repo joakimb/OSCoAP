@@ -101,6 +101,9 @@ public class OSSerializer {
             if (option.getNumber() == OptionNumberRegistry.OBJECT_SECURITY) continue;
             if (option.getNumber() == OptionNumberRegistry.PROXY_URI) continue;
             if (option.getNumber() == OptionNumberRegistry.MAX_AGE) continue;
+            if (option.getNumber() == OptionNumberRegistry.URI_HOST) continue;
+            if (option.getNumber() == OptionNumberRegistry.URI_PORT) continue;
+            if (option.getNumber() == OptionNumberRegistry.PROXY_SCHEME) continue;
 
             // write 4-bit option delta
             int optionDelta = option.getNumber() - previousOptionNumber;

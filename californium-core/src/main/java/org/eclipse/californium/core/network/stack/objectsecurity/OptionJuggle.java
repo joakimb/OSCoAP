@@ -15,13 +15,31 @@ public class OptionJuggle {
 
         boolean hasProxyUri = options.hasProxyUri();
         boolean hasObserve = options.hasProxyUri();
+
+        boolean hasUriHost = options.hasUriHost();
+        boolean hasUriPort = options.hasUriPort();
+        boolean hasProxyScheme = options.hasProxyScheme();
+
         int observe = 0;
         String proxyUri = null;
+        String uriHost = null;
+        int uriPort = 0;
+        String proxyScheme = null;
+
         if (hasProxyUri) {
             proxyUri = options.getProxyUri();
         }
         if (hasObserve) {
             observe = options.getObserve();
+        }
+        if (hasUriHost) {
+            uriHost = options.getUriHost();
+        }
+        if (hasUriPort) {
+            uriPort = options.getUriPort();
+        }
+        if (hasProxyScheme) {
+            proxyScheme = options.getProxyScheme();
         }
         options.clear();
         options.addOption(osOpt);
@@ -30,6 +48,15 @@ public class OptionJuggle {
         }
         if (hasObserve) {
             options.setObserve(observe);
+        }
+        if (hasUriHost) {
+            options.setUriHost(uriHost);
+        }
+        if (hasUriPort) {
+            options.setUriPort(uriPort);
+        }
+        if (hasProxyScheme) {
+            options.setProxyScheme(proxyScheme);
         }
         options.setMaxAge(0);
         return options;
