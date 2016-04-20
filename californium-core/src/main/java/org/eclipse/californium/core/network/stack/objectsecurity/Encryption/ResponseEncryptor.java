@@ -20,7 +20,7 @@ public class ResponseEncryptor extends Encryptor{
     }
 
     public Response encrypt() throws OSTIDException, OSSequenceNumberException {
-
+        tid.increaseSenderSeq();
         checkTid();
         collectData(response);
 

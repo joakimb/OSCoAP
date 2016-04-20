@@ -28,21 +28,18 @@ public abstract class Decryptor {
 
 
         byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
-        int len = (enc.findAttribute(HeaderKeys.IV)).GetByteString().length;
         CryptoContext tid = getTid();
-        tid.checkIncomingSeq(seq);
-        checkTid(tid);
-        enc.setExternal(serializeAAD(tid));
-        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
-
-
-
 
         byte[] result = null;
 
         try {
             byte[] key = tid.getReceiverKey();
             tid.increaseReceiverSeq();
+            tid.checkIncomingSeq(seq);
+            checkTid(tid);
+            enc.setExternal(serializeAAD(tid));
+            enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
+            enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(getTid().getReceiverIV(seq)),Attribute.DontSendAttributes);
             result = enc.decrypt(key);
         } catch (CoseException e) {
             e.printStackTrace();

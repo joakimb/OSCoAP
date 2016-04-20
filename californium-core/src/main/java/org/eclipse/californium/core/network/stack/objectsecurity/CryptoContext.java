@@ -18,19 +18,21 @@ public class CryptoContext {
     private BigInteger senderSeq;    //1-8 bytes, contains the last used value
     private BigInteger receiverSeq;    //1-8 bytes, contains the last used value (max 56 bits?)
     private BigInteger seqMax;         //2^56 - 1
-    private byte[] senderSalt = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-    private byte[] receiverSalt = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02};
+    private byte[] senderSalt;
+    private byte[] receiverSalt;
     private int replayProtectionWin = 0;
-    private byte[] senderKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-    private byte[] receiverKey = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    private byte[] senderKey;// = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    private byte[] receiverKey;// = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
 
-    public CryptoContext(BigInteger cid){
+    public CryptoContext(BigInteger cid, byte[] senderSalt, byte[] receiverSalt , byte[] senderKey, byte[] receiverKey){
         this.cid = cid;
-        //this.senderSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-        //this.receiverSeq = new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
         this.senderSeq = BigInteger.ZERO;
         this.receiverSeq = BigInteger.ZERO;
+        this.senderSalt = senderSalt;
+        this.receiverSalt = receiverSalt;
+        this.senderKey = senderKey;
+        this.receiverKey = receiverKey;
         seqMax = new BigInteger("2").pow(56).subtract(BigInteger.ONE);
     }
 
@@ -73,7 +75,7 @@ public class CryptoContext {
         return cid.toByteArray();
     }
 
-    public byte[] getSenderSeq(){
+    public synchronized byte[] getSenderSeq(){
 
         byte[] array = senderSeq.toByteArray();
         /*
@@ -89,21 +91,21 @@ public class CryptoContext {
         */ return array;
     }
 
-    public void increaseSenderSeq() throws OSSequenceNumberException {
+    public synchronized void increaseSenderSeq() throws OSSequenceNumberException {
         if (senderSeq.compareTo(seqMax) >= 0){
             throw new OSSequenceNumberException("sequence number too big");
         }
         senderSeq = senderSeq.add(BigInteger.ONE);
     }
 
-    public void increaseReceiverSeq() throws OSTIDException {
+    public synchronized void increaseReceiverSeq() throws OSTIDException {
         if (receiverSeq.compareTo(seqMax) >= 0){
             throw new OSTIDException("sequence number too big");
         }
         receiverSeq = receiverSeq.add(BigInteger.ONE);
     }
 
-    public byte[] getReceiverSeq(){
+    public synchronized byte[] getReceiverSeq(){
         byte[] array = receiverSeq.toByteArray();
 /*
         //remove leading zeroes

@@ -26,6 +26,7 @@ public class RequestEncryptor extends Encryptor {
     public Request encrypt() throws OSSequenceNumberException, OSTIDException {
 
         checkTid();
+        tid.increaseSenderSeq();
         collectData(request);
 
         Encrypt0Message enc = prepareCOSEStructure(confidential, aad, tid);

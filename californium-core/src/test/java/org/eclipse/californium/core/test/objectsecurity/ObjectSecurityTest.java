@@ -37,12 +37,15 @@ public class ObjectSecurityTest {
         serverDBA = new HashMapCryptoContextDB();
         clientDBA = new HashMapCryptoContextDB();
         byte[] cidA = BigInteger.ONE.toByteArray();
-        byte[] cidB = BigInteger.ONE.toByteArray();
-        CryptoContext serverContextA = new CryptoContext(BigInteger.ONE);
-        CryptoContext clientContextA = new CryptoContext(BigInteger.ONE);
+        byte[] saltClient = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+        byte[] saltServer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02};
+        byte[] keyClient = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+        byte[] keyServer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+        CryptoContext clientContextA = new CryptoContext(BigInteger.ONE, saltClient, saltServer, keyClient, keyServer);
+        CryptoContext serverContextA = new CryptoContext(BigInteger.ONE, saltServer, saltClient, keyServer, keyClient);
         try {
+            clientDBA.addContext(cidA, "coap://localhost/", clientContextA);
             serverDBA.addContext(cidA, "coap://localhost/", serverContextA);
-            clientDBA.addContext(cidB, "coap://localhost/", clientContextA);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);
@@ -357,11 +360,13 @@ public class ObjectSecurityTest {
 */
         OSCoapClient client = new OSCoapClient(uri, clientDBA);
  //       OSCoapClient client2 = new OSCoapClient(uri, db);
-        CryptoContext tid = new CryptoContext(BigInteger.ONE);
+        //CryptoContext tid = new CryptoContext(BigInteger.ONE);
         //CryptoContextDB db = HashMapCryptoContextDB.getDB();
+        CryptoContext tidc = clientDBA.getContext(BigInteger.ONE.toByteArray());
+        CryptoContext tids = serverDBA.getContext(BigInteger.ONE.toByteArray());
         try {
-            clientDBA.addContext(tid.getCid(), uri, tid);
-            serverDBA.addContext(tid.getCid(), uri, tid);
+            clientDBA.addContext(tidc.getCid(), uri, tidc);
+            serverDBA.addContext(tids.getCid(), uri, tids);
         } catch (OSTIDException e) {
             e.printStackTrace();
             System.exit(1);

@@ -25,13 +25,12 @@ public abstract class Encryptor {
     byte[] aad;
 
     protected byte[] encryptAndEncode(Encrypt0Message enc, CryptoContext tid) throws CoseException, OSSequenceNumberException {
-        enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
-        //byte[] tmp = tid.getSenderIV();
-        enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getSenderIV()),Attribute.ProtectedAttributes);
-        enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
+
         try {
             byte[] key = tid.getSenderKey();
-            tid.increaseSenderSeq();
+            enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
+            enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getSenderIV()),Attribute.DontSendAttributes);
+            enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
             enc.encrypt(key);
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
