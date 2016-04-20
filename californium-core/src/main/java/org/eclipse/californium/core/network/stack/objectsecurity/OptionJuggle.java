@@ -11,26 +11,27 @@ import java.util.List;
  */
 public class OptionJuggle {
 
-    public static OptionSet moveOptionsToOSPayload(OptionSet options, Option osOpt) {
+    public static OptionSet clearOptionsPresentInOSPayload(OptionSet options, Option osOpt) {
 
         boolean hasProxyUri = options.hasProxyUri();
+        boolean hasObserve = options.hasProxyUri();
+        int observe = 0;
         String proxyUri = null;
         if (hasProxyUri) {
             proxyUri = options.getProxyUri();
-            options.removeProxyUri();
         }
-        boolean hasMaxAge = options.hasMaxAge();
-        if (hasMaxAge) {
-            options.removeMaxAge();
+        if (hasObserve) {
+            observe = options.getObserve();
         }
         options.clear();
         options.addOption(osOpt);
         if (hasProxyUri) {
             options.setProxyUri(proxyUri);
         }
-        if (hasMaxAge) {
-            options.setMaxAge(0);
+        if (hasObserve) {
+            options.setObserve(observe);
         }
+        options.setMaxAge(0);
         return options;
     }
 

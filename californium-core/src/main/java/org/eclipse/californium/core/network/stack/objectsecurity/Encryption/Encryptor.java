@@ -55,7 +55,7 @@ public abstract class Encryptor {
             osOpt.setValue(protectedPayload);
             message.setPayload(new byte[0]);
         }
-        message.setOptions(OptionJuggle.moveOptionsToOSPayload(options, osOpt));
+        message.setOptions(OptionJuggle.clearOptionsPresentInOSPayload(options, osOpt));
     }
 
     protected void checkTid() throws OSTIDException{
