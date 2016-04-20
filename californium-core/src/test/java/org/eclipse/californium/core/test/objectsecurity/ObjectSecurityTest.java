@@ -135,7 +135,7 @@ public class ObjectSecurityTest {
             assertTrue(false);
         }
         assertFalse("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
-        assertEquals("should be only 1 option (Object Security)", 1, request.getOptions().asSortedList().size());
+        assertEquals("should be only 2 options (Object Security and max age)", 2, request.getOptions().asSortedList().size());
         assertEquals("option payload not moved to message", 0, OptionJuggle.filterOSOption(request.getOptions()).getLength());
         try {
             osLayer.prepareReceive(request, serverDBA);
