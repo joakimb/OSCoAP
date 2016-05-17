@@ -10,6 +10,7 @@ import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OS
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.ScandiumLogger;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.InMemoryPskStore;
@@ -26,6 +27,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import static org.bouncycastle.crypto.tls.ConnectionEnd.server;
 import static org.junit.Assert.*;
@@ -450,6 +452,9 @@ public class ObjectSecurityTest {
     @Test
     public void test_CoAP_DTLS_single_req_resp(){
 
+//        ScandiumLogger.initialize();
+        //ScandiumLogger.setLevel(Level.FINE);
+
         //============================ SERVER ========================================
         CoapServer server = new CoapServer();
         server.add(new CoapResource("t"){
@@ -459,13 +464,11 @@ public class ObjectSecurityTest {
         });
 
         // Pre-shared secrets
-        InMemoryPskStore serverPskStore = new InMemoryPskStore();
-        serverPskStore.setKey("password", "sesame".getBytes()); // from ETSI Plugtest test spec
 
 
         DtlsConnectorConfig.Builder serverConfig = new DtlsConnectorConfig.Builder(new InetSocketAddress(DTLS_PORT));
         serverConfig.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
-        serverConfig.setPskStore(serverPskStore);
+        serverConfig.setPskStore(new StaticPskStore("Client_identity", "secretPSK".getBytes()));
 
         DTLSConnector serverConnector = new DTLSConnector(serverConfig.build());
 
@@ -478,13 +481,10 @@ public class ObjectSecurityTest {
         String uri = "coaps://localhost/t?";
 
         // Pre-shared secrets
-        InMemoryPskStore clientPskStore = new InMemoryPskStore();
-        clientPskStore.setKey("password", "sesame".getBytes()); // from ETSI Plugtest test spec
 
         DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
-        builder.setPskStore(clientPskStore);
+        builder.setPskStore(new StaticPskStore("Client_identity", "secretPSK".getBytes()));
         builder.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
-
         DTLSConnector dtlsConnector;
         dtlsConnector = new DTLSConnector(builder.build());
 
@@ -492,7 +492,7 @@ public class ObjectSecurityTest {
         client.setEndpoint(new CoapEndpoint(dtlsConnector, NetworkConfig.getStandard()));
         CoapResponse response = client.get();
 
-        System.out.println("RESPONSE: " + response);
+        System.out.println("RESPONSE: " + response.getResponseText());
     }
 
     @Ignore
