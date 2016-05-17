@@ -468,7 +468,7 @@ public class ObjectSecurityTest {
 
         DtlsConnectorConfig.Builder serverConfig = new DtlsConnectorConfig.Builder(new InetSocketAddress(DTLS_PORT));
         serverConfig.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
-        serverConfig.setPskStore(new StaticPskStore("Client_identity", "secretPSK".getBytes()));
+        serverConfig.setPskStore(new StaticPskStore("C", "secretPSK".getBytes()));
 
         DTLSConnector serverConnector = new DTLSConnector(serverConfig.build());
 
@@ -483,7 +483,7 @@ public class ObjectSecurityTest {
         // Pre-shared secrets
 
         DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
-        builder.setPskStore(new StaticPskStore("Client_identity", "secretPSK".getBytes()));
+        builder.setPskStore(new StaticPskStore("C", "secretPSK".getBytes()));
         builder.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
         DTLSConnector dtlsConnector;
         dtlsConnector = new DTLSConnector(builder.build());
@@ -491,6 +491,7 @@ public class ObjectSecurityTest {
         CoapClient client = new CoapClient(uri);
         client.setEndpoint(new CoapEndpoint(dtlsConnector, NetworkConfig.getStandard()));
         CoapResponse response = client.get();
+        server.stop();
 
         System.out.println("RESPONSE: " + response.getResponseText());
     }
