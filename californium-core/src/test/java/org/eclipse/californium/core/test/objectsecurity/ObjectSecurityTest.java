@@ -1,8 +1,11 @@
 package org.eclipse.californium.core.test.objectsecurity;
 
 import com.upokecenter.cbor.CBORObject;
+import org.bouncycastle.crypto.tls.CipherSuite;
 import org.eclipse.californium.core.*;
 import org.eclipse.californium.core.coap.*;
+import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
@@ -13,9 +16,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.bouncycastle.crypto.tls.ConnectionEnd.server;
 import static org.junit.Assert.*;
 
 /**
@@ -379,6 +385,94 @@ public class ObjectSecurityTest {
 
             System.out.println("RESPONSE: " + content);
         //assertArrayEquals(content, new byte[4]);
+    }
+
+    private static String payload = "aaaaa";                        //5
+    //private static String payload = "aaaaaaaaaa";                   //10
+    //private static String payload = "aaaaaaaaaaaaaaa";              //15
+    //private static String payload = "aaaaaaaaaaaaaaaaaaaa"          //20
+    //private static String payload = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";     //40
+    //private static String payload = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";//80
+
+    @Ignore
+    @Test
+    public void testOSCoAP_single_req_resp(){
+        OSCoapServer server = new OSCoapServer(serverDBA, 5683);
+        server.add(new CoapResource("t"){
+            public void handleGET(CoapExchange exchange) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, payload);
+            }
+        });
+        server.start();
+        String uri = "coap://localhost:5683/t?";
+        OSCoapClient client = new OSCoapClient(uri, clientDBA);
+        CryptoContext tidc = clientDBA.getContext(BigInteger.ONE.toByteArray());
+        CryptoContext tids = serverDBA.getContext(BigInteger.ONE.toByteArray());
+        try {
+            clientDBA.addContext(tidc.getCid(), uri, tidc);
+            serverDBA.addContext(tids.getCid(), uri, tids);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        String content = client.get().getResponseText();
+
+        System.out.println("RESPONSE: " + content);
+    }
+
+    @Ignore
+    @Test
+    public void test_plain_CoAP_single_req_resp(){
+        CoapServer server = new CoapServer(5683);
+        server.add(new CoapResource("t"){
+            public void handleGET(CoapExchange exchange) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, payload);
+            }
+        });
+        server.start();
+        String uri = "coap://localhost:5683/t?";
+        CoapClient client = new CoapClient(uri);
+
+        String content = client.get().getResponseText();
+
+        System.out.println("RESPONSE: " + content);
+    }
+
+    public static final int DTLS_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_SECURE_PORT);
+    @Ignore
+    @Test
+    public void test_CoAP_DTLS_single_req_resp(){
+
+        CoapServer server = new CoapServer();
+        server.add(new CoapResource("t"){
+            public void handleGET(CoapExchange exchange) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, payload);
+            }
+        });
+/*
+        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(new InetSocketAddress(DTLS_PORT));
+        config.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8,
+                CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8});
+        config.setPskStore(pskStore);
+        config.setIdentity((PrivateKey)keyStore.getKey("server", KEY_STORE_PASSWORD.toCharArray()),
+                keyStore.getCertificateChain("server"), true);
+        config.setTrustStore(trustedCertificates);
+
+        DTLSConnector connector = new DTLSConnector(config.build());
+
+        server.addEndpoint(new CoapEndpoint(connector, NetworkConfig.getStandard()));
+        server.start();
+
+
+
+        server.start();
+        String uri = "coaps://localhost:5684/t?";
+        CoapClient client = new CoapClient(uri);
+
+        String content = client.get().getResponseText();
+*/
+        System.out.println("RESPONSE: " + content);
     }
 
     @Ignore
