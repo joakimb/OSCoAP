@@ -1,7 +1,6 @@
 package org.eclipse.californium.core.test.objectsecurity;
 
 import com.upokecenter.cbor.CBORObject;
-import org.bouncycastle.crypto.tls.CipherSuite;
 import org.eclipse.californium.core.*;
 import org.eclipse.californium.core.coap.*;
 import org.eclipse.californium.core.network.CoapEndpoint;
@@ -10,13 +9,20 @@ import org.eclipse.californium.core.network.stack.objectsecurity.*;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSSequenceNumberException;
 import org.eclipse.californium.core.network.stack.objectsecurity.osexcepitons.OSTIDException;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.californium.scandium.dtls.pskstore.InMemoryPskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.StaticPskStore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -444,35 +450,49 @@ public class ObjectSecurityTest {
     @Test
     public void test_CoAP_DTLS_single_req_resp(){
 
+        //============================ SERVER ========================================
         CoapServer server = new CoapServer();
         server.add(new CoapResource("t"){
             public void handleGET(CoapExchange exchange) {
                 exchange.respond(CoAP.ResponseCode.CONTENT, payload);
             }
         });
-/*
-        DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(new InetSocketAddress(DTLS_PORT));
-        config.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8,
-                CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8});
-        config.setPskStore(pskStore);
-        config.setIdentity((PrivateKey)keyStore.getKey("server", KEY_STORE_PASSWORD.toCharArray()),
-                keyStore.getCertificateChain("server"), true);
-        config.setTrustStore(trustedCertificates);
 
-        DTLSConnector connector = new DTLSConnector(config.build());
+        // Pre-shared secrets
+        InMemoryPskStore serverPskStore = new InMemoryPskStore();
+        serverPskStore.setKey("password", "sesame".getBytes()); // from ETSI Plugtest test spec
 
-        server.addEndpoint(new CoapEndpoint(connector, NetworkConfig.getStandard()));
+
+        DtlsConnectorConfig.Builder serverConfig = new DtlsConnectorConfig.Builder(new InetSocketAddress(DTLS_PORT));
+        serverConfig.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
+        serverConfig.setPskStore(serverPskStore);
+
+        DTLSConnector serverConnector = new DTLSConnector(serverConfig.build());
+
+        server.addEndpoint(new CoapEndpoint(serverConnector, NetworkConfig.getStandard()));
         server.start();
 
 
+        //=========================== CLIENT ============================================
 
-        server.start();
-        String uri = "coaps://localhost:5684/t?";
+        String uri = "coaps://localhost/t?";
+
+        // Pre-shared secrets
+        InMemoryPskStore clientPskStore = new InMemoryPskStore();
+        clientPskStore.setKey("password", "sesame".getBytes()); // from ETSI Plugtest test spec
+
+        DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
+        builder.setPskStore(clientPskStore);
+        builder.setSupportedCipherSuites(new CipherSuite[]{CipherSuite.TLS_PSK_WITH_AES_128_CCM_8});
+
+        DTLSConnector dtlsConnector;
+        dtlsConnector = new DTLSConnector(builder.build());
+
         CoapClient client = new CoapClient(uri);
+        client.setEndpoint(new CoapEndpoint(dtlsConnector, NetworkConfig.getStandard()));
+        CoapResponse response = client.get();
 
-        String content = client.get().getResponseText();
-*/
-        System.out.println("RESPONSE: " + content);
+        System.out.println("RESPONSE: " + response);
     }
 
     @Ignore
