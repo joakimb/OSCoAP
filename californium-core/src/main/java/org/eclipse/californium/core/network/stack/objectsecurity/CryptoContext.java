@@ -39,7 +39,8 @@ public class CryptoContext {
     public byte[] getSenderIV(){
         byte seq[] = getSenderSeq();
         byte salt[] = Arrays.copyOf(senderSalt, 7);
-        return ivSeqXOR(seq,salt);
+        return salt;
+        //return ivSeqXOR(seq,salt);
     }
 
     private byte[] ivSeqXOR(byte[] seq, byte[]salt){

@@ -28,15 +28,28 @@ public abstract class Encryptor {
 
         try {
             byte[] key = tid.getSenderKey();
-            enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
+            //enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
             enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getSenderIV()),Attribute.DontSendAttributes);
             enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
             enc.encrypt(key);
+            System.out.println("IV: " + bytesToHex(tid.getSenderIV()));
+            System.out.println("KEY: " + bytesToHex(key));
         } catch (InvalidCipherTextException e) {
             e.printStackTrace();
             System.exit(0);
         }
         return enc.EncodeToBytes();
+    }
+
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     protected void collectData(Message message){
@@ -49,9 +62,11 @@ public abstract class Encryptor {
 
         Option osOpt = OptionJuggle.filterOSOption(options);
         if (message.getPayloadSize() > 0) {
+            System.out.println("in payload");
             osOpt.setValue(new byte[0]);
             message.setPayload(protectedPayload);
         } else {
+            System.out.println("in option");
             osOpt.setValue(protectedPayload);
             message.setPayload(new byte[0]);
         }

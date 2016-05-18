@@ -46,15 +46,29 @@ public class RequestEncryptor extends Encryptor {
     protected byte[] serializeAAD(){
         int code = request.getCode().value;
         String uri = request.getURI();
-        return OSSerializer.serializeRequestAdditionalAuthenticatedData(code, tid, uri);
+        byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(code, tid, uri);
+        System.out.println("aad" +bytesToHex(aad));
+        return null;
+    }
+
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
 
     private Encrypt0Message prepareCOSEStructure(byte[] confidential, byte[] aad, CryptoContext tid) {
         Encrypt0Message enc = new Encrypt0Message();
         enc.SetContent(confidential);
-        enc.setExternal(aad);
+        //enc.setExternal(aad);
         enc.addAttribute(HeaderKeys.KID, CBORObject.FromObject(tid.getCid()), Attribute.ProtectedAttributes);
+        System.out.println("KID: " + bytesToHex(tid.getCid()));
         return enc;
     }
 }

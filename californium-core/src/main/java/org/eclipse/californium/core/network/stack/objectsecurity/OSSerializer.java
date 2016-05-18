@@ -51,7 +51,8 @@ public class OSSerializer {
         writeCoAPHeader(writer, code);
         writeAlgorithm(writer, tid);
         writeUri(writer, uri);
-        return writer.toByteArray();
+        return new byte[0];
+        //return writer.toByteArray();
     }
 
     private static void writeUri(DatagramWriter writer, String uri){
