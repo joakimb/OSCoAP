@@ -33,7 +33,8 @@ public class OSSerializer {
         writeAlgorithm(writer, tid);
         writer.writeBytes(tid.getCid());
         writer.writeBytes(stripZeroes(tid.getSenderSeq()));
-        return writer.toByteArray();
+        return new byte[0];
+        //return writer.toByteArray();
     }
 
     public static byte[] serializeReceiveResponseAdditionalAuthenticatedData(int code, CryptoContext tid, byte[] seq){
@@ -42,7 +43,8 @@ public class OSSerializer {
         writeAlgorithm(writer, tid);
         writer.writeBytes(tid.getCid());
         writer.writeBytes(stripZeroes(seq));
-        return writer.toByteArray();
+        return new byte[0];
+        //return writer.toByteArray();
     }
 
 

@@ -377,6 +377,7 @@ public class ObjectSecurityTest {
         }
 
         String content = client.get().getResponseText();
+
         System.out.println("RESPONSE: " + content);
     }
 
@@ -407,8 +408,8 @@ public class ObjectSecurityTest {
  //       OSCoapClient client2 = new OSCoapClient(uri, db);
         //CryptoContext tid = new CryptoContext(BigInteger.ONE);
         //CryptoContextDB db = HashMapCryptoContextDB.getDB();
-        CryptoContext tidc = clientDBA.getContext(BigInteger.ONE.toByteArray());
-        CryptoContext tids = serverDBA.getContext(BigInteger.ONE.toByteArray());
+        CryptoContext tidc = clientDBA.getContext(cid_bi.toByteArray());
+        CryptoContext tids = serverDBA.getContext(cid_bi.toByteArray());
         try {
             clientDBA.addContext(tidc.getCid(), uri, tidc);
             serverDBA.addContext(tids.getCid(), uri, tids);

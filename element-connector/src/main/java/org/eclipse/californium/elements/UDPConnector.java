@@ -251,6 +251,7 @@ public class UDPConnector implements Connector {
 							datagram.getAddress(), datagram.getPort()});
 			}
 			byte[] bytes = Arrays.copyOfRange(datagram.getData(), datagram.getOffset(), datagram.getLength());
+			System.out.println("RECEIVING UDP BYTES");
 			RawData msg = new RawData(bytes, datagram.getAddress(), datagram.getPort());
 			
 			receiver.receiveData(msg);
