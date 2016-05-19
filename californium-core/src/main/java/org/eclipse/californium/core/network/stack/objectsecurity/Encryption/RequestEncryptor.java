@@ -47,7 +47,7 @@ public class RequestEncryptor extends Encryptor {
         int code = request.getCode().value;
         String uri = request.getURI();
         byte[] aad = OSSerializer.serializeRequestAdditionalAuthenticatedData(code, tid, uri);
-        System.out.println("aad" +bytesToHex(aad));
+        System.out.println("aad: " +bytesToHex(aad));
         return null;
     }
 

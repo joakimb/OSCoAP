@@ -56,6 +56,7 @@ public abstract class Encryptor {
         options = message.getOptions();
         confidential = OSSerializer.serializeConfidentialData(options, message.getPayload());
         aad = serializeAAD();
+        System.out.println("confidential: " + bytesToHex(confidential));
     }
 
     protected void setOSPayload(byte[] protectedPayload, Message message) {

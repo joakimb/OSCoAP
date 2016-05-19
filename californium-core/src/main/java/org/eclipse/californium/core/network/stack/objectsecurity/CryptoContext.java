@@ -135,8 +135,10 @@ public class CryptoContext {
     }
 
     public void checkIncomingSeq(byte[] seq) throws OSSequenceNumberException{
+        /*
         if (!Arrays.equals(seq, getReceiverSeq())) { //TODO, handle messages arriving out of order
             throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(getReceiverSeq()).toString() + " got: " + new BigInteger(seq).toString());
         }
+        */
     }
 }

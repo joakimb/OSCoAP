@@ -27,7 +27,7 @@ public abstract class Decryptor {
     protected byte[] decryptAndDecode(Encrypt0Message enc) throws OSSequenceNumberException, OSTIDException, OSException {
 
 
-        byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
+        byte[] seq = {0x00};//(enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
         CryptoContext tid = getTid();
 
         byte[] result = null;
@@ -60,13 +60,23 @@ public abstract class Decryptor {
     public Encrypt0Message prepareCOSEStructure(){
         Encrypt0Message enc = new Encrypt0Message();
         try {
+            System.out.println("PROTECTED: "  + bytesToHex(protectedData));
             enc.DecodeFromCBORObject(CBORObject.DecodeFromBytes(protectedData));
         } catch (CoseException e) {
             e.printStackTrace();
         }
         return enc;
     }
-
+final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
     protected void checkTid(CryptoContext tid) throws OSTIDException {
         if (tid == null) {
             System.out.print("TID NOT PRESENT, ABORTING");

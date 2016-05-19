@@ -356,7 +356,16 @@ public class ObjectSecurityTest {
      @Ignore
     @Test
     public void compatibilityTest(){
+
+         OSCoapServer server = new OSCoapServer(serverDBA, 5683);
+            server.add(new CoapResource("hello"){
+                public void handleGET(CoapExchange exchange) {
+                    exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
+                }
+            });
+            server.start();
         String uri = "coap://[aaaa::212:4b00:40f:b80]:5683/test/hello";
+        //String uri = "coap://localhost/hello";
 
         OSCoapClient client = new OSCoapClient(uri, clientDBA);
         CryptoContext tidc = clientDBA.getContext(cid_bi.toByteArray());

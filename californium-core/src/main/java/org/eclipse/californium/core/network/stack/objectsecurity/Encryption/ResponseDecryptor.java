@@ -26,7 +26,7 @@ public class ResponseDecryptor extends Decryptor {
         collectData(response);
         this.tid = tid;
         Encrypt0Message enc = prepareCOSEStructure();
-        seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
+        seq = new byte[]{0x00};//(enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
         byte[] content = new byte[0];
         try {
             content = decryptAndDecode(enc);
