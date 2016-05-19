@@ -36,6 +36,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     public byte[] prepareReceive(Request request, CryptoContextDB db) throws OSTIDException, OSSequenceNumberException {
 
+        System.out.println("receiving req: " + request.toString());
         RequestDecryptor decryptor = new RequestDecryptor(db, request);
         return decryptor.decrypt();
 
@@ -43,6 +44,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     public void prepareReceive(Response response, CryptoContext tid) throws OSTIDException, OSSequenceNumberException {
 
+        System.out.println("receiving resp: " + response.toString());
         ResponseDecryptor decryptor = new ResponseDecryptor(response);
         decryptor.decrypt(tid);
     }
@@ -101,6 +103,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveRequest(Exchange exchange, Request request) {
+        System.out.println("COAP receive: " + request.toString());
         if (isProtected(request)) {
             byte[] cid = null;
             try {
@@ -120,7 +123,7 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     @Override
     public void receiveResponse(Exchange exchange, Response response) {
-
+        System.out.println("COAP receive: " + response.toString());
         if (isProtected(response)) {
             try {
                 CryptoContext tid = exchange.getCryptographicContextDB().getContext(exchange.getCryptgraphicContextID());
