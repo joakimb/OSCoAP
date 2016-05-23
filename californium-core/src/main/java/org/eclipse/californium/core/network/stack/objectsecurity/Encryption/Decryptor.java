@@ -27,7 +27,7 @@ public abstract class Decryptor {
     protected byte[] decryptAndDecode(Encrypt0Message enc) throws OSSequenceNumberException, OSTIDException, OSException {
 
 
-        byte[] seq = {0x00};//(enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
+        byte[] seq = (enc.findAttribute(HeaderKeys.PARTIAL_IV)).GetByteString();
         CryptoContext tid = getTid();
 
         byte[] result = null;

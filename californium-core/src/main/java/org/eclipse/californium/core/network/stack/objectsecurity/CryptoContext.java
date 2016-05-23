@@ -39,8 +39,7 @@ public class CryptoContext {
     public byte[] getSenderIV(){
         byte seq[] = getSenderSeq();
         byte salt[] = Arrays.copyOf(senderSalt, 7);
-        return salt;
-        //return ivSeqXOR(seq,salt);
+        return ivSeqXOR(seq,salt);
     }
 
     private byte[] ivSeqXOR(byte[] seq, byte[]salt){
@@ -135,10 +134,10 @@ public class CryptoContext {
     }
 
     public void checkIncomingSeq(byte[] seq) throws OSSequenceNumberException{
-        /*
+
         if (!Arrays.equals(seq, getReceiverSeq())) { //TODO, handle messages arriving out of order
             throw new OSSequenceNumberException("unexpected sequence number, expected: " + new BigInteger(getReceiverSeq()).toString() + " got: " + new BigInteger(seq).toString());
         }
-        */
+
     }
 }

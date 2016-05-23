@@ -243,6 +243,7 @@ public class UDPConnector implements Connector {
 		}
 		
 		protected void work() throws IOException {
+			System.out.println("work!");
 			datagram.setLength(size);
 			socket.receive(datagram);
 			if (LOGGER.isLoggable(Level.FINER)) {
@@ -250,6 +251,7 @@ public class UDPConnector implements Connector {
 						new Object[]{socket.getLocalSocketAddress(), datagram.getLength(),
 							datagram.getAddress(), datagram.getPort()});
 			}
+			System.out.print("befor copy");
 			byte[] bytes = Arrays.copyOfRange(datagram.getData(), datagram.getOffset(), datagram.getLength());
 			System.out.println("RECEIVING UDP BYTES");
 			RawData msg = new RawData(bytes, datagram.getAddress(), datagram.getPort());

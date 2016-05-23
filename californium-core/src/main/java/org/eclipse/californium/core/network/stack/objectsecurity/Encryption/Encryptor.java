@@ -28,7 +28,7 @@ public abstract class Encryptor {
 
         try {
             byte[] key = tid.getSenderKey();
-            //enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
+            enc.addAttribute(HeaderKeys.PARTIAL_IV, CBORObject.FromObject(tid.getSenderSeq()),Attribute.ProtectedAttributes);
             enc.addAttribute(HeaderKeys.IV, CBORObject.FromObject(tid.getSenderIV()),Attribute.DontSendAttributes);
             enc.addAttribute(HeaderKeys.Algorithm, tid.getAlg().AsCBOR(), Attribute.DontSendAttributes);
             enc.encrypt(key);
