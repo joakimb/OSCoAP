@@ -40,6 +40,7 @@ public class ObjectSecurityTest {
     ObjectSecurityLayer osLayer;
     CryptoContextDB serverDBA;
     CryptoContextDB clientDBA;
+    BigInteger cid_bi;
 
     /**
      * Sets up one CryptoContext database for a server and one for a client. Also sets up a ObjectSecuritylayer.
@@ -50,13 +51,16 @@ public class ObjectSecurityTest {
         osLayer = new ObjectSecurityLayer();
         serverDBA = new HashMapCryptoContextDB();
         clientDBA = new HashMapCryptoContextDB();
-        byte[] cidA = BigInteger.ONE.toByteArray();
-        byte[] saltClient = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+        byte[] saltClient = {0x47, 0x47, 0x47, 0x47, 0x47, 0x47, 0x47};
+        byte[] keyClient = {0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41 };
+        cid_bi = new BigInteger("2");
+        byte[] cidA = cid_bi.toByteArray();
+        //byte[] saltClient = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
         byte[] saltServer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02};
-        byte[] keyClient = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+        //byte[] keyClient = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
         byte[] keyServer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02};
-        CryptoContext clientContextA = new CryptoContext(BigInteger.ONE, saltClient, saltServer, keyClient, keyServer);
-        CryptoContext serverContextA = new CryptoContext(BigInteger.ONE, saltServer, saltClient, keyServer, keyClient);
+        CryptoContext clientContextA = new CryptoContext(cid_bi, saltClient, saltServer, keyClient, keyServer);
+        CryptoContext serverContextA = new CryptoContext(cid_bi, saltServer, saltClient, keyServer, keyClient);
         try {
             clientDBA.addContext(cidA, "coap://localhost/", clientContextA);
             serverDBA.addContext(cidA, "coap://localhost/", serverContextA);
@@ -77,9 +81,9 @@ public class ObjectSecurityTest {
     @Test
     public void testEncryptedNoOptionsNoPayload(){
         Request request = Request.newGet().setURI("coap://localhost:5683");
-		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
+        request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         try {
-                osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
+            osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
         } catch (OSTIDException e) {
             e.printStackTrace();
             assertTrue(false);
@@ -106,7 +110,7 @@ public class ObjectSecurityTest {
     public void testEncryptDecryptOptions(){
         Request request = Request.newGet().setURI("coap://localhost:5683");
         request.getOptions().setLocationPath("/test/path");
-		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
+        request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         assertEquals(2,request.getOptions().getLocationPathCount());
         try {
             osLayer.prepareSend(request, clientDBA.getContext("coap://localhost:5683"));
@@ -136,7 +140,7 @@ public class ObjectSecurityTest {
     @Test
     public void testsEncryptDecryptPayloadInPayload(){
         Request request = Request.newPost().setURI("coap://localhost:5683");
-		request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
+        request.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         request.setPayload("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         assertTrue("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".equals(request.getPayloadString()));
         try {
@@ -349,18 +353,46 @@ public class ObjectSecurityTest {
 
     }
 
+    @Ignore
+    @Test
+    public void compatibilityTest(){
+
+        OSCoapServer server = new OSCoapServer(serverDBA, 5683);
+        server.add(new CoapResource("hello"){
+            public void handleGET(CoapExchange exchange) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
+            }
+        });
+        server.start();
+        String uri = "coap://[aaaa::212:4b00:40f:b80]:5683/test/hello";
+        //String uri = "coap://localhost/hello";
+
+        OSCoapClient client = new OSCoapClient(uri, clientDBA);
+        CryptoContext tidc = clientDBA.getContext(cid_bi.toByteArray());
+        try {
+            clientDBA.addContext(tidc.getCid(), uri, tidc);
+        } catch (OSTIDException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        String content = client.get().getResponseText();
+
+        System.out.println("RESPONSE: " + content);
+    }
+
 
     @Ignore
     @Test
     public void devtest(){
-       //from californium examples
-            OSCoapServer server = new OSCoapServer(serverDBA, 5683);
-            server.add(new CoapResource("hello"){
-                public void handleGET(CoapExchange exchange) {
-                    exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
-                }
-            });
-            server.start();
+        //from californium examples
+        OSCoapServer server = new OSCoapServer(serverDBA, 5683);
+        server.add(new CoapResource("hello"){
+            public void handleGET(CoapExchange exchange) {
+                exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
+            }
+        });
+        server.start();
         String uri = "coap://localhost:5683/hello?data=world";
         /*
             String uri2 = "coap://localhost:5685/hello?data=world";
@@ -373,11 +405,11 @@ public class ObjectSecurityTest {
             server2.start();
 */
         OSCoapClient client = new OSCoapClient(uri, clientDBA);
- //       OSCoapClient client2 = new OSCoapClient(uri, db);
+        //       OSCoapClient client2 = new OSCoapClient(uri, db);
         //CryptoContext tid = new CryptoContext(BigInteger.ONE);
         //CryptoContextDB db = HashMapCryptoContextDB.getDB();
-        CryptoContext tidc = clientDBA.getContext(BigInteger.ONE.toByteArray());
-        CryptoContext tids = serverDBA.getContext(BigInteger.ONE.toByteArray());
+        CryptoContext tidc = clientDBA.getContext(cid_bi.toByteArray());
+        CryptoContext tids = serverDBA.getContext(cid_bi.toByteArray());
         try {
             clientDBA.addContext(tidc.getCid(), uri, tidc);
             serverDBA.addContext(tids.getCid(), uri, tids);
@@ -391,7 +423,7 @@ public class ObjectSecurityTest {
 
         //String content2 = client2.get().getResponseText();
 
-            System.out.println("RESPONSE: " + content);
+        System.out.println("RESPONSE: " + content);
         //assertArrayEquals(content, new byte[4]);
     }
 
@@ -500,11 +532,11 @@ public class ObjectSecurityTest {
     @Test
     public void tmpBorderRouterTest(){
 
-            CoapClient client = new CoapClient("coap://[aaaa::212:4b00:40f:b80]:5683/test/hello");
+        CoapClient client = new CoapClient("coap://[aaaa::212:4b00:40f:b80]:5683/test/hello");
 
-            String content = client.get().getResponseText();
+        String content = client.get().getResponseText();
 
-            System.out.println("RESPONSE from chip: " + content);
+        System.out.println("RESPONSE from chip: " + content);
     }
 
     private boolean assertCtxState(CryptoContext ctx, int send, int receive){
@@ -553,7 +585,7 @@ public class ObjectSecurityTest {
         } else {
             response = new Response(CoAP.ResponseCode.CONTENT);
             response.setPayload(responsePayload);
-		    response.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
+            response.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
         response.getOptions().addOption(new Option(OptionNumberRegistry.OBJECT_SECURITY));
         osLayer.prepareSend(response, tid);

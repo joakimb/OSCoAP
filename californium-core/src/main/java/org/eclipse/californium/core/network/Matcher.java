@@ -411,7 +411,7 @@ public class Matcher {
 		Random random = new Random();
 		
 		// random length between 1 and tokenSizeLimit
-		byte[] token = new byte[random.nextInt(tokenSizeLimit)+1];
+		byte[] token = new byte[2];
 		// random value
 		random.nextBytes(token);
 		

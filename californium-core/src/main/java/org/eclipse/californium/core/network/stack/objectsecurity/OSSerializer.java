@@ -42,7 +42,9 @@ public class OSSerializer {
         writeAlgorithm(writer, tid);
         writer.writeBytes(tid.getCid());
         writer.writeBytes(stripZeroes(seq));
-        return writer.toByteArray();
+        byte[] b =  writer.toByteArray();
+        System.out.println(bytesToHex(b));
+        return b;
     }
 
 
@@ -51,7 +53,9 @@ public class OSSerializer {
         writeCoAPHeader(writer, code);
         writeAlgorithm(writer, tid);
         writeUri(writer, uri);
-        return writer.toByteArray();
+        byte[] b = writer.toByteArray();
+        System.out.println(bytesToHex(b));
+        return b;
     }
 
     private static void writeUri(DatagramWriter writer, String uri){
@@ -59,7 +63,7 @@ public class OSSerializer {
     }
 
     private static void writeAlgorithm(DatagramWriter writer, CryptoContext tid){
-        writer.write(tid.getAlg().AsCBOR().AsInt32(), 32);
+        writer.write(tid.getAlg().AsCBOR().AsInt32(), 8);
     }
 
 //    private static void writeReceiverTid(DatagramWriter writer, CryptoContext tid){
