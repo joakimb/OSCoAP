@@ -43,7 +43,7 @@ public class OSSerializer {
         writer.writeBytes(tid.getCid());
         writer.writeBytes(stripZeroes(seq));
         byte[] b =  writer.toByteArray();
-        System.out.println(bytesToHex(b));
+        //System.out.println(bytesToHex(b));
         return b;
     }
 
@@ -54,7 +54,7 @@ public class OSSerializer {
         writeAlgorithm(writer, tid);
         writeUri(writer, uri);
         byte[] b = writer.toByteArray();
-        System.out.println(bytesToHex(b));
+        //System.out.println(bytesToHex(b));
         return b;
     }
 
