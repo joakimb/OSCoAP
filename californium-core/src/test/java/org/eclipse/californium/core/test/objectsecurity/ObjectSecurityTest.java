@@ -437,6 +437,7 @@ public class ObjectSecurityTest {
     @Ignore
     @Test
     public void testOSCoAP_single_req_resp(){
+
         OSCoapServer server = new OSCoapServer(serverDBA, 5683);
         server.add(new CoapResource("t"){
             public void handleGET(CoapExchange exchange) {
@@ -444,14 +445,18 @@ public class ObjectSecurityTest {
             }
         });
         server.start();
+
         String uri = "coap://localhost:5683/t?";
         OSCoapClient client = new OSCoapClient(uri, clientDBA);
-        CryptoContext tidc = clientDBA.getContext(BigInteger.ONE.toByteArray());
-        CryptoContext tids = serverDBA.getContext(BigInteger.ONE.toByteArray());
+
+        CryptoContext tidc = clientDBA.getContext(cid_bi.toByteArray());
+        CryptoContext tids = serverDBA.getContext(cid_bi.toByteArray());
+        System.out.println(clientDBA);
         try {
             clientDBA.addContext(tidc.getCid(), uri, tidc);
             serverDBA.addContext(tids.getCid(), uri, tids);
         } catch (OSTIDException e) {
+            System.out.println("error tid");
             e.printStackTrace();
             System.exit(1);
         }
