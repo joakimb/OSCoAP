@@ -121,7 +121,11 @@ public class ObjectSecurityLayer extends AbstractLayer {
     @Override
     public void receiveResponse(Exchange exchange, Response response) {
 
-        CryptoContext tid = exchange.getCryptographicContextDB().getContext(exchange.getCryptgraphicContextID());
+        CryptoContextDB db = exchange.getCryptographicContextDB();
+        CryptoContext tid = null;
+        if (db != null){
+            tid = db.getContext(exchange.getCryptgraphicContextID());
+        }
 
         if (responseShouldBeProtected(exchange)) {
             if (!isProtected(response)){
