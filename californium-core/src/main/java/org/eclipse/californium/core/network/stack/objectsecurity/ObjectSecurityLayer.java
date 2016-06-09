@@ -121,9 +121,15 @@ public class ObjectSecurityLayer extends AbstractLayer {
     @Override
     public void receiveResponse(Exchange exchange, Response response) {
 
-        if (isProtected(response)) {
+        CryptoContext tid = exchange.getCryptographicContextDB().getContext(exchange.getCryptgraphicContextID());
+
+        if (responseShouldBeProtected(exchange)) {
+            if (!isProtected(response)){
+                //TODO fail gracefully
+                System.out.println("possible mitm blocked");
+                System.exit(1);
+            }
             try {
-                CryptoContext tid = exchange.getCryptographicContextDB().getContext(exchange.getCryptgraphicContextID());
                 prepareReceive(response, tid);
             } catch (OSTIDException e) {
                 //TODO fail gracefully
@@ -133,8 +139,10 @@ public class ObjectSecurityLayer extends AbstractLayer {
                 e.printStackTrace();
                 System.exit(1);
             }
+            super.receiveResponse(exchange,response);
+        } else {
+            super.receiveResponse(exchange,response);
         }
-        super.receiveResponse(exchange,response);
     }
 
     @Override
@@ -143,6 +151,10 @@ public class ObjectSecurityLayer extends AbstractLayer {
     }
 
     private boolean shouldProtectResponse(Exchange exchange){
+        return exchange.getCryptgraphicContextID() != null;
+    }
+
+    private boolean responseShouldBeProtected(Exchange exchange){
         return exchange.getCryptgraphicContextID() != null;
     }
 
