@@ -76,8 +76,10 @@ public class DataSerializer {
 		writer.writeBytes(message.getToken());
 		
 		List<Option> options = message.getOptions().asSortedList(); // already sorted
+		System.out.println("options:");
 		int lastOptionNumber = 0;
 		for (Option option:options) {
+			System.out.println("o: " + option.toString());
 			
 			// write 4-bit option delta
 			int optionDelta = option.getNumber() - lastOptionNumber;

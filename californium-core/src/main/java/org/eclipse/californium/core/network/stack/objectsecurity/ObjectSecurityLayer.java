@@ -23,6 +23,8 @@ public class ObjectSecurityLayer extends AbstractLayer {
 
     public Request prepareSend(Request message, CryptoContext tid) throws OSTIDException, OSSequenceNumberException {
 
+        message.getOptions().setProxyUri("coap://192.168.0.179:5683");
+        System.out.println("request: " + message);
         RequestEncryptor encryptor = new RequestEncryptor(message, tid);
         return encryptor.encrypt();
 

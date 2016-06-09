@@ -386,14 +386,18 @@ public class ObjectSecurityTest {
     @Test
     public void devtest(){
         //from californium examples
-        OSCoapServer server = new OSCoapServer(serverDBA, 5683);
+/*
+        CoapServer server = new CoapServer(5683);
         server.add(new CoapResource("hello"){
             public void handleGET(CoapExchange exchange) {
+                System.out.println("handle get");
                 exchange.respond(CoAP.ResponseCode.CONTENT, "Hi, there!");
             }
         });
         server.start();
-        String uri = "coap://localhost:5683/hello?data=world";
+*/
+       String uri = "coap://localproxy:5656/hello?data=world";
+       // String uri = "coap://localproxy:5683/hello?data=world";
         /*
             String uri2 = "coap://localhost:5685/hello?data=world";
          OSCoapServer server2 = new OSCoapServer(db, 5685);
@@ -404,7 +408,7 @@ public class ObjectSecurityTest {
             });
             server2.start();
 */
-        OSCoapClient client = new OSCoapClient(uri, clientDBA);
+        CoapClient client = new CoapClient(uri);
         //       OSCoapClient client2 = new OSCoapClient(uri, db);
         //CryptoContext tid = new CryptoContext(BigInteger.ONE);
         //CryptoContextDB db = HashMapCryptoContextDB.getDB();
