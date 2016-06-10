@@ -45,12 +45,16 @@ public class OptionJuggle {
         options.clear();
         options.addOption(osOpt);
         if (hasProxyUri) {
-            /*
+            System.out.println("uncensored: " + proxyUri);
+            proxyUri = proxyUri.replace("coap://", "");
+            proxyUri = proxyUri.replace("coaps://", "");
+            System.out.println("scheme stripped: " + proxyUri);
             int i = proxyUri.indexOf('/');
             if (i >= 0){
                 proxyUri = proxyUri.substring(0,i);
             }
-            */
+            proxyUri = "coap://" + proxyUri;
+
             options.setProxyUri(proxyUri);
         }
         if (hasObserve) {

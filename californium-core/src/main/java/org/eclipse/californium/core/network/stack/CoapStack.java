@@ -210,8 +210,8 @@ public class CoapStack {
 	
 		@Override
 		public void sendRequest(Exchange exchange, Request request) {
-			request.getOptions().setProxyUri("coap://192.168.0.179:5683");
-			System.out.println("request: " + request);
+			//request.getOptions().setProxyUri("coap://192.168.0.179:5683");
+			//System.out.println("request: " + request);
 			outbox.sendRequest(exchange, request);
 		}
 
