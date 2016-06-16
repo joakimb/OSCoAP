@@ -4,6 +4,8 @@ This is a fork of the Eclipse project Californium created with the purpose of ad
 
 git clone --recursive git@bitbucket.org:joakimb/oscoap_californium.git
 
+cd oscoap_californium
+
 ./makeCOSElocal.sh
 
 ##import instructions for intellij: 
