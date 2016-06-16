@@ -15,7 +15,6 @@ cd oscoap_californium
 * Select "import project" and navigate to OSCoAP directory
 * Select "import project from external model" and "maven", hit next
 * Select "import maven projects automatically"
-* Select "Search for projects recursively"
 * Hit next until prompted for java SDK, select a java 1.8 version
 * Hit next, next and finish
 
