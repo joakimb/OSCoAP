@@ -3,7 +3,9 @@ This is a fork of the Eclipse project Californium created with the purpose of ad
 ##setup:
 
 git clone --recursive git@github.com:joakimb/OSCoAP.git
+
 cd OSCoAP
+
 ./makeCOSElocal.sh
 
 ##import instructions for intellij: 
