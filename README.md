@@ -2,7 +2,7 @@ This is a fork of the Eclipse project Californium created with the purpose of ad
 
 ##setup:
 
-git clone --recursive git@bitbucket.org:joakimb/oscoap_californium.git
+git clone --recursive git@github.com:joakimb/OSCoAP.git
 
 cd oscoap_californium
 
