@@ -1,4 +1,4 @@
-This is a fork of the Eclipse project Californium created with the purpose of addig object security to CoAP in accordance with https://tools.ietf.org/html/draft-selander-ace-object-security-04
+This is a fork of the Eclipse project Californium created with the purpose of adding object security to CoAP in accordance with https://tools.ietf.org/html/draft-selander-ace-object-security-04
 
 ##setup:
 
