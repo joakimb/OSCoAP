@@ -14,7 +14,7 @@ public class OptionJuggle {
     public static OptionSet clearOptionsPresentInOSPayload(OptionSet options, Option osOpt) {
 
         boolean hasProxyUri = options.hasProxyUri();
-        boolean hasObserve = options.hasProxyUri();
+        boolean hasObserve = options.hasObserve();
 
         boolean hasUriHost = options.hasUriHost();
         boolean hasUriPort = options.hasUriPort();
@@ -44,10 +44,14 @@ public class OptionJuggle {
         options.clear();
         options.addOption(osOpt);
         if (hasProxyUri) {
+            proxyUri = proxyUri.replace("coap://", "");
+            proxyUri = proxyUri.replace("coaps://", "");
             int i = proxyUri.indexOf('/');
             if (i >= 0){
                 proxyUri = proxyUri.substring(0,i);
             }
+            proxyUri = "coap://" + proxyUri;
+
             options.setProxyUri(proxyUri);
         }
         if (hasObserve) {
